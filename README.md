@@ -107,5 +107,6 @@ reports/public/  example public reports for seed 42
 - [`docs/BENCHMARK_DEV_RESULTS.md`](docs/BENCHMARK_DEV_RESULTS.md) and [`docs/BENCHMARK_DEV_RESULTS_3B1B.md`](docs/BENCHMARK_DEV_RESULTS_3B1B.md): development comparisons, including configurations that were not chosen.
 - [`docs/BENCHMARK_HOLDOUT_RESULTS.md`](docs/BENCHMARK_HOLDOUT_RESULTS.md): final held-out evaluation.
 - [`docs/REALISM_REVIEW.md`](docs/REALISM_REVIEW.md): football-realism facts, reserved for the owner's assessment.
+- [`docs/SAMPLE_RUN.log`](docs/SAMPLE_RUN.log): real end-to-end run on seed 42 (tests, simulation, detection, holdout lock).
 - [`docs/COMMIT_HASH_MAP.md`](docs/COMMIT_HASH_MAP.md): maps commit hashes cited in the docs to the published history.
 - [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md): hackathon brief and vision.

@@ -1,0 +1,59 @@
+=== Beyond90 run log  2026-10-21T23:07:28Z  commit d1c0beb  Python 3.12.7
+
+$ python -m pytest -q
+.............................................                            [100%]
+333 passed in 8.44s
+
+$ python -m beyond90.simulator --seed 42 --control --out generated --reports reports
+setup           generated/m-5cb13f027b84/public/match_setup.json
+events          generated/m-5cb13f027b84/public/events.jsonl
+ground_truth    generated/m-5cb13f027b84/private/ground_truth.json
+public_report   reports/public/match_report_seed42.md
+private_record  reports/private/evaluation_seed42.md
+control_events  generated/m-5cb13f027b84-control/public/events.jsonl
+control_report  reports/public/match_report_seed42_control.md
+
+$ wc -l events.jsonl (treated, control)
+1728
+1719
+
+$ head -3 public/events.jsonl
+{"schema_version":"2.0.0","event_id":"m-5cb13f027b84-00000","match_id":"m-5cb13f027b84","sequence":0,"period":1,"clock_ms":0,"related_event_id":null,"team_id":"kes","event_type":"restart","restart_type":"kickoff","player_id":"kes-07","location":{"x":52.5,"y":34.0}}
+{"schema_version":"2.0.0","event_id":"m-5cb13f027b84-00001","match_id":"m-5cb13f027b84","sequence":1,"period":1,"clock_ms":0,"related_event_id":null,"team_id":"kes","event_type":"pass","player_id":"kes-07","location":{"x":52.5,"y":34.0},"end_location":{"x":58.6,"y":29.1},"outcome":"complete","recipient_id":"kes-04"}
+{"schema_version":"2.0.0","event_id":"m-5cb13f027b84-00002","match_id":"m-5cb13f027b84","sequence":2,"period":1,"clock_ms":2245,"related_event_id":null,"team_id":"kes","event_type":"pass","player_id":"kes-04","location":{"x":53.4,"y":29.8},"end_location":{"x":25.4,"y":27.8},"outcome":"complete","recipient_id":"kes-07"}
+
+$ python -m beyond90.detection <run>/generated/m-5cb13f027b84 --out detection.md --evidence evidence.json
+kes increase at P2 29' (10 supporting events)
+
+$ python -m beyond90.detection <run>/generated/m-5cb13f027b84-control --out detection_control.md
+no findings
+
+--- detection.md (findings + timeline)
+### KES: increase detected at 74' (period 2, 1740s)
+
+Observed increase in Kestrel Bay's attacking-third pressing: pressures per Northbridge Harriers build-up pass went from 0.10 (7/73, earlier in the match) to 0.47 (8/17, last 10 minutes). Over the same period Northbridge Harriers' defensive-third pass completion was 85% -> 65% and Kestrel Bay won the ball in its attacking third 2 times. This is an association between observed event rates; it does n
+
+- Status: sustained_change
+```
+NBH P1: ???????????????????????????????...............
+NBH P2: .???..???..........................???..???......
+KES P1: ??????????????????????????????????????????????
+KES P2: ???..cc..........????.????ccScc..............cc.c
+```
+
+--- match report header
+# Match report: Northbridge Harriers 1-3 Kestrel Bay
+
+Public report: built only from the public match setup and event stream.
+
+- Match id: `m-5cb13f027b84`
+- Half-time: 0-2
+- Total public events: 1728
+- Period 1 length: 46:32
+- Period 2 length: 49:54
+- Ends: NBH attacked toward x=105 in the first half (ends swap at half-time); KES kicked off.
+
+## Time accounting
+
+$ python -m beyond90.benchmark --split holdout   (must refuse)
+beyond90.benchmark.splits.HoldoutLockedError: the held-out split needs --unlock-holdout
