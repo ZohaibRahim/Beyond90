@@ -135,14 +135,31 @@ def render_match_report(setup: MatchSetup, events: Sequence[MatchEvent], event_s
         if isinstance(e, PeriodEndEvent):
             out.append(f"- Period {e.period} length: {_mmss(e.clock_ms)}")
     out += [
-        f"- Ball in play (estimate): {_mmss(poss.ball_in_play_ms)}  ·  dead ball: {_mmss(poss.dead_ms)}"
-        f"  ·  contested: {_mmss(poss.contested_ms)}",
         f"- Ends: {short[setup.first_half_x105_team_id]} attacked toward x=105 in the first half "
         f"(ends swap at half-time); {short[setup.first_half_kickoff_team_id]} kicked off.",
         "",
-        "Possession is a time-based estimate: time between consecutive events is credited to the team "
-        "holding the ball while it is in play; dead-ball and contested time are excluded. Pass share is "
-        "shown separately and is not a possession measure.",
+        "## Time accounting",
+        "",
+        "Every interval between consecutive events belongs to exactly one category, so the rows sum to the "
+        "elapsed match time.",
+        "",
+        "| Category | Time | Share of elapsed |",
+        "|---|---:|---:|",
+    ]
+    elapsed = poss.elapsed_ms
+    rows = [(f"Controlled by {setup.team(t).name}", poss.controlled_ms[t]) for t in setup.team_ids]
+    rows += [("Contested in play (incomplete pass in flight, loose ball, turnover not yet completed)",
+              poss.contested_ms),
+             ("Stoppages (ball out of play, fouls, offsides, goals, substitutions)", poss.stoppage_ms)]
+    out += [f"| {label} | {_mmss(ms)} | {_pct(ms / elapsed)} |" for label, ms in rows]
+    out += [f"| **Elapsed match time** | **{_mmss(elapsed)}** | 100.0% |",
+            "",
+            f"Ball in play = controlled + contested = {_mmss(poss.ball_in_play_ms)}.",
+            "",
+            "Possession is a time-based estimate: each team's share of *controlled* time. Contested time and "
+            "stoppages are excluded. A completed pass in flight counts for the passer. When a loose ball is "
+            "followed by a restart, the moment it left play is not observed, so that whole interval counts as "
+            "a stoppage. Pass share is shown separately and is not a possession measure.",
     ]
 
     out += ["", "## Line-ups and shape", ""]

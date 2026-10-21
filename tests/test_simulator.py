@@ -202,3 +202,34 @@ def test_outputs_split_public_and_private(tmp_path):
     events = [EventAdapter.validate_json(line) for line in paths["events"].read_text(encoding="utf-8").splitlines()]
     assert validate_match(setup, events).score == r.ground_truth.final_score
     assert GroundTruthRecord.model_validate_json(paths["ground_truth"].read_text(encoding="utf-8")) == r.ground_truth
+
+
+def test_no_spatial_concentration_of_pass_receptions():
+    """Regression: clamping once piled receptions on x=104 / x=1 / y=1 / y=67 and on the goal line."""
+    from collections import Counter
+
+    from beyond90.schemas import PassEvent, PassOutcome
+
+    completed = deep = longest_run = 0
+    xs, ys = Counter(), Counter()
+    for seed in SEEDS:
+        r = sim(seed)
+        run = 0
+        for e in r.events:
+            if not (isinstance(e, PassEvent) and e.outcome is PassOutcome.COMPLETE):
+                continue
+            end = r.setup.to_attacking_frame(e.end_location, e.team_id, e.period)
+            completed += 1
+            xs[round(end.x)] += 1
+            ys[round(end.y)] += 1
+            if end.x >= 98:
+                deep += 1
+                run += 1
+                longest_run = max(longest_run, run)
+            else:
+                run = 0
+    assert deep / completed < 0.04
+    assert longest_run <= 4
+    # No single 1 m line across or along the pitch holds an outsized share of receptions.
+    assert max(xs.values()) / completed < 0.03
+    assert max(ys.values()) / completed < 0.04

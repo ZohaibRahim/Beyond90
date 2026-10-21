@@ -67,6 +67,12 @@ INTERCEPT_SHARE = 0.15
 CROSS_CLEARED_FOR_CORNER = 0.3
 SHOT_SCALE = 0.55
 GK_RANGE_X = 18.0
+# Where a pass or carry can plausibly end with a player in control (team frame).
+RECEIVE_X = (2.0, 101.0)
+RECEIVE_Y = (2.0, 66.0)
+# Final-third passes lose forward room as the goal line approaches (cut-backs).
+CUTBACK_FROM_X = 88.0
+CUTBACK_SLOPE = 0.5
 # Chance an outfield passer in their own half chooses to play back to the goalkeeper:
 # (unpressed, pressed) for defenders and midfielders. Recycling via the keeper is
 # a deliberate choice, more common deep and under pressure.
@@ -105,6 +111,15 @@ def _zone(x: float) -> int:
 
 def _clamp(v: float, lo: float, hi: float) -> float:
     return min(max(v, lo), hi)
+
+
+def _reflect(v: float, lo: float, hi: float) -> float:
+    """Fold an overshooting target back inside [lo, hi] instead of piling it on the edge."""
+    if v > hi:
+        v = hi - (v - hi)
+    if v < lo:
+        v = lo + (lo - v)
+    return _clamp(v, lo, hi)
 
 
 class _Engine:
@@ -391,8 +406,10 @@ class _Engine:
         zone = _zone(x)
         if rng.random() < (0.12 if pressured and zone == 0 else 0.06):
             return x + rng.gauss(32, 8), y + rng.gauss(0, 15), None, False
-        mean = (7.0, 5.0, 1.0)[zone] - (3.0 if pressured else 0.0)
-        return x + rng.gauss(mean, (11, 11, 9)[zone]), y + rng.gauss((34 - y) * 0.15, 11), None, False
+        mean = (7.0, 5.0, 1.0)[zone] - (3.0 if pressured else 0.0) - CUTBACK_SLOPE * max(0.0, x - CUTBACK_FROM_X)
+        # Near the goal line the ball is played back toward the centre of the box (cut-back).
+        pull = 0.15 if x < CUTBACK_FROM_X else 0.6
+        return x + rng.gauss(mean, (11, 11, 9)[zone]), y + rng.gauss((34 - y) * pull, 11), None, False
 
     def _pass(self, team: str, opp: str, x: float, y: float, ctx: str | None,
               pressure: MatchEvent | None, opp_press: PressingIntensity) -> None:
@@ -403,7 +420,8 @@ class _Engine:
             ex, ey, p_fixed, is_cross = rng.uniform(4, 12), 34 + rng.gauss(0, 7), 0.96, False
         else:
             ex, ey, p_fixed, is_cross = self._pass_target(x, y, ctx, pressure is not None)
-        ex, ey = _clamp(ex, 1, 104), _clamp(ey, 1, 67)
+        raw_ex, raw_ey = ex, ey
+        ex, ey = _reflect(ex, *RECEIVE_X), _reflect(ey, *RECEIVE_Y)
         distance = math.hypot(ex - x, ey - y)
         if p_fixed is None:
             p = 0.92 - 0.007 * max(0.0, distance - 12) - (0.08 if ex > 70 else 0.0) + (0.04 if ex < x - 2 else 0.0)
@@ -419,8 +437,8 @@ class _Engine:
 
         p_out = 0.0 if ctx == RestartType.KICKOFF else 0.034 + (0.02 if pressure else 0.0)
         if rng.random() < p_out:
-            if ex > 98:
-                end = self._loc(team, PITCH_LENGTH_M, ey)
+            if raw_ex > RECEIVE_X[1]:
+                end = self._loc(team, PITCH_LENGTH_M, _clamp(raw_ey, 1, 67))
                 self._restart(RestartType.GOAL_KICK, opp, self._goal_kick_spot(opp))
             else:
                 end = self._loc(team, ex, 0.0 if ey < 34 else PITCH_WIDTH_M)
@@ -448,7 +466,7 @@ class _Engine:
             cx = ex + max(-3.0, rng.gauss(2.5 if ex < 85 else 0.5, 3))
             if pressure is not None and opp_press is HIGH and ex - x > 15:
                 cx += rng.uniform(4, 10)  # space left behind an aggressive press
-            carry = self._loc(team, _clamp(cx, 1, 103.5), _clamp(ey + rng.gauss(0, 3), 1, 67))
+            carry = self._loc(team, _reflect(cx, *RECEIVE_X), _reflect(ey + rng.gauss(0, 3), *RECEIVE_Y))
             self.ball = (carry.x, carry.y)
             self.clock += rng.randint(800, 3500)
             return

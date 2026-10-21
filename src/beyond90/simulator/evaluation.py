@@ -17,6 +17,12 @@ from beyond90.schemas import PassEvent, PassOutcome, Position
 from beyond90.simulator.engine import SimulationResult, simulate_match
 from beyond90.simulator.scenario import control_script
 
+PATTERN_NOT_CAUSE = (
+    "These are aggregate pattern differences against a paired control. They do not show that the "
+    "intervention caused any individual goal or chance: after the switch the two matches diverge "
+    "entirely, so single events cannot be matched between them."
+)
+
 LONG_PASS_M = 30.0
 KEEPER_LONG_M = 35.0
 
@@ -104,6 +110,8 @@ def intervention_review(seeds: Iterable[int]) -> str:
         "match (same seed and baselines, no intervention) from the first affected event onward. Before that "
         "point the two streams are identical. Values are per-match means.",
         "",
+        PATTERN_NOT_CAUSE,
+        "",
         "| Metric | Scripted | Control | Scripted / control | Seeds scripted > control |",
         "|---|---:|---:|---:|---:|",
     ]
@@ -138,7 +146,7 @@ def render_evaluation_record(result: SimulationResult) -> str:
     if gt.applied:
         treated, control = paired_metrics(gt.script.simulation_seed)
         out += ["", "## This match vs its paired control (after the intervention)", "",
-                "| Metric | Scripted | Control |", "|---|---:|---:|"]
+                PATTERN_NOT_CAUSE, "", "| Metric | Scripted | Control |", "|---|---:|---:|"]
         out += [f"| {METRIC_LABELS[k]} | {_fmt(treated[k])} | {_fmt(control[k])} |" for k in METRIC_LABELS]
     out.append("")
     return "\n".join(out)

@@ -3,19 +3,29 @@
 Both replay the stream through ``MatchStateTracker`` (no look-ahead), so they use
 only observable match state.
 
-Possession estimate: the time between consecutive events in the same period is
-credited to the team in possession while the ball is IN_PLAY. Intervals while
-the ball is dead are excluded, and intervals while the ball is contested
-(after a tackle/interception/incomplete pass/parried shot, before the turnover is
-resolved) are counted as ``contested``. Limitations: event timestamps are the
-only clock, so a pass in flight is credited to the passer, and play between
-events is assumed to belong to whoever held the ball at the earlier event.
+Time accounting: every interval between consecutive events in the same period
+falls into exactly ONE category, so the categories sum to elapsed match time:
+
+- CONTROLLED: ball in play and held by a team (credited to that team).
+- CONTESTED: ball in play but nobody in control: an incomplete pass in flight,
+  a won tackle or interception before the turnover is recorded, or a loose ball
+  after a parried/blocked shot that is then recovered.
+- STOPPAGE: ball out of play (after fouls, offsides, goals, balls out, and
+  substitutions). A loose ball followed by a restart or substitution proves the
+  ball went out; the exact moment is not observed, so that whole interval is a
+  stoppage.
+
+Possession share = a team's CONTROLLED time / all CONTROLLED time. Limitations:
+event timestamps are the only clock, so a completed pass in flight is credited
+to the passer, and play between events belongs to whoever held the ball at the
+earlier event. An interval's category is final once the next event arrives.
 """
 
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
+from enum import StrEnum
 
 from beyond90.schemas import (
     MatchEvent,
@@ -24,6 +34,7 @@ from beyond90.schemas import (
     PassOutcome,
     PeriodEndEvent,
     PossessionChangeEvent,
+    RestartEvent,
     ShotEvent,
     ShotOutcome,
     SubstitutionEvent,
@@ -31,27 +42,48 @@ from beyond90.schemas import (
 from beyond90.schemas.validation import BallState, MatchStateTracker
 
 
+class TimeCategory(StrEnum):
+    CONTROLLED = "controlled"
+    CONTESTED = "contested"
+    STOPPAGE = "stoppage"
+
+
 @dataclass(frozen=True)
 class PossessionInterval:
     start_event: MatchEvent
     duration_ms: int
-    team_id: str | None  # team in possession; None when dead or contested
-    ball: BallState
+    category: TimeCategory
+    team_id: str | None  # team in control; set only for CONTROLLED
 
 
 @dataclass
 class PossessionSummary:
-    in_play_ms: dict[str, int]
+    controlled_ms: dict[str, int]
     contested_ms: int = 0
-    dead_ms: int = 0
+    stoppage_ms: int = 0
 
     @property
     def ball_in_play_ms(self) -> int:
-        return sum(self.in_play_ms.values()) + self.contested_ms
+        """Controlled + contested."""
+        return sum(self.controlled_ms.values()) + self.contested_ms
+
+    @property
+    def elapsed_ms(self) -> int:
+        return self.ball_in_play_ms + self.stoppage_ms
 
     def share(self, team_id: str) -> float | None:
-        held = sum(self.in_play_ms.values())
-        return self.in_play_ms[team_id] / held if held else None
+        held = sum(self.controlled_ms.values())
+        return self.controlled_ms[team_id] / held if held else None
+
+
+def _categorize(team: str | None, ball: BallState, next_event: MatchEvent) -> TimeCategory:
+    if ball is BallState.IN_PLAY:
+        return TimeCategory.CONTROLLED
+    if ball is BallState.DEAD:
+        return TimeCategory.STOPPAGE
+    if ball is BallState.LOOSE and isinstance(next_event, (RestartEvent, SubstitutionEvent)):
+        return TimeCategory.STOPPAGE
+    return TimeCategory.CONTESTED
 
 
 def possession_intervals(setup: MatchSetup, events: Iterable[MatchEvent]) -> list[PossessionInterval]:
@@ -62,8 +94,9 @@ def possession_intervals(setup: MatchSetup, events: Iterable[MatchEvent]) -> lis
     for e in events:
         if prev is not None and prev_state is not None and prev.period == e.period:
             team, ball = prev_state
-            intervals.append(PossessionInterval(prev, e.clock_ms - prev.clock_ms,
-                                                team if ball is BallState.IN_PLAY else None, ball))
+            category = _categorize(team, ball, e)
+            intervals.append(PossessionInterval(prev, e.clock_ms - prev.clock_ms, category,
+                                                team if category is TimeCategory.CONTROLLED else None))
         tracker.apply(e)
         prev, prev_state = e, (tracker.possession, tracker.ball)
     return intervals
@@ -74,14 +107,15 @@ def summarize_possession(
     intervals: Iterable[PossessionInterval],
     include: Callable[[MatchEvent], bool] | None = None,
 ) -> PossessionSummary:
-    summary = PossessionSummary(in_play_ms={tid: 0 for tid in setup.team_ids})
+    summary = PossessionSummary(controlled_ms={tid: 0 for tid in setup.team_ids})
     for iv in intervals:
         if include is not None and not include(iv.start_event):
             continue
-        if iv.team_id is not None:
-            summary.in_play_ms[iv.team_id] += iv.duration_ms
-        elif iv.ball is BallState.DEAD:
-            summary.dead_ms += iv.duration_ms
+        if iv.category is TimeCategory.CONTROLLED:
+            assert iv.team_id is not None
+            summary.controlled_ms[iv.team_id] += iv.duration_ms
+        elif iv.category is TimeCategory.STOPPAGE:
+            summary.stoppage_ms += iv.duration_ms
         else:
             summary.contested_ms += iv.duration_ms
     return summary

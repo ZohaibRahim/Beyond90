@@ -1,16 +1,29 @@
-# Match report: Northbridge Harriers 0-1 Kestrel Bay
+# Match report: Northbridge Harriers 1-3 Kestrel Bay
 
 Public report: built only from the public match setup and event stream.
 
 - Match id: `m-5cb13f027b84`
-- Half-time: 0-0
-- Total public events: 1876
-- Period 1 length: 46:56
-- Period 2 length: 49:45
-- Ball in play (estimate): 71:54  ·  dead ball: 24:47  ·  contested: 6:46
+- Half-time: 0-2
+- Total public events: 1728
+- Period 1 length: 46:32
+- Period 2 length: 49:54
 - Ends: NBH attacked toward x=105 in the first half (ends swap at half-time); KES kicked off.
 
-Possession is a time-based estimate: time between consecutive events is credited to the team holding the ball while it is in play; dead-ball and contested time are excluded. Pass share is shown separately and is not a possession measure.
+## Time accounting
+
+Every interval between consecutive events belongs to exactly one category, so the rows sum to the elapsed match time.
+
+| Category | Time | Share of elapsed |
+|---|---:|---:|
+| Controlled by Northbridge Harriers | 30:14 | 31.4% |
+| Controlled by Kestrel Bay | 26:19 | 27.3% |
+| Contested in play (incomplete pass in flight, loose ball, turnover not yet completed) | 5:46 | 6.0% |
+| Stoppages (ball out of play, fouls, offsides, goals, substitutions) | 34:06 | 35.4% |
+| **Elapsed match time** | **96:27** | 100.0% |
+
+Ball in play = controlled + contested = 62:20.
+
+Possession is a time-based estimate: each team's share of *controlled* time. Contested time and stoppages are excluded. A completed pass in flight counts for the passer. When a loose ball is followed by a restart, the moment it left play is not observed, so that whole interval counts as a stoppage. Pass share is shown separately and is not a possession measure.
 
 ## Line-ups and shape
 
@@ -28,99 +41,102 @@ Bench: 12 Pieter Gaunt (GK), 15 Arlo Penn (DF), 17 Dex Holloway (DF), 14 Remy As
 
 ## Goals
 
-- 89' KES — Remy Aster (right foot, 7 m from goal centre) `m-5cb13f027b84-01767`
+- 7' KES — Femi Castell (left foot, 12 m from goal centre) `m-5cb13f027b84-00130`
+- 41' KES — Milo Grange (left foot, 6 m from goal centre) `m-5cb13f027b84-00757`
+- 78' KES — Femi Castell (head, 6 m from goal centre) `m-5cb13f027b84-01431`
+- 85' NBH — Dario Quill (right foot, 13 m from goal centre) `m-5cb13f027b84-01534`
 
 ## Substitutions
 
-- 46' NBH: Wyn Ostrava on for Rui Okonde
-- 46' KES: Zeno Farrell on for Milo Grange
-- 46' KES: Kai Lunde on for Oren Tasker
-- 57' KES: Dex Holloway on for Colm Strand
-- 58' KES: Arlo Penn on for Yusuf Lenk
-- 63' NBH: Pax Deline on for Bram Vettel
-- 70' NBH: Hugo Ressel on for Caspian Hale
-- 84' KES: Remy Aster on for Sid Harlow
+- 46' NBH: Sami Torvik on for Eli Brandt
+- 46' KES: Zeno Farrell on for Oren Tasker
+- 46' KES: Dex Holloway on for Teo Barrigan
+- 57' KES: Remy Aster on for Lucan Brisk
+- 57' KES: Arlo Penn on for Milo Grange
+- 64' NBH: Pax Deline on for Kofi Marlan
+- 70' NBH: Lio Fenner on for Odran Keel
+- 84' KES: Bastian Crowe on for Femi Castell
 
 ## Team statistics (full match)
 
 | Stat | Northbridge Harriers | Kestrel Bay |
 |---|---:|---:|
-| possession (time-based estimate) | 51.1% | 48.9% |
-| goals | 0 | 1 |
-| shots | 9 | 13 |
-| shots on target | 3 | 5 |
-| passes | 596 | 568 |
-| passes completed | 486 | 457 |
-| pressures | 165 | 153 |
-| pressures attacking third | 39 | 35 |
-| tackles | 16 | 18 |
-| tackles won | 7 | 13 |
-| interceptions | 15 | 16 |
-| turnovers won | 103 | 106 |
-| turnovers won attacking third | 9 | 11 |
-| fouls | 8 | 8 |
-| offsides | 0 | 2 |
-| corners | 3 | 2 |
-| throw ins | 15 | 16 |
-| goal kicks | 8 | 7 |
-| free kicks | 10 | 8 |
+| possession (time-based estimate) | 53.5% | 46.5% |
+| goals | 1 | 3 |
+| shots | 13 | 12 |
+| shots on target | 4 | 5 |
+| passes | 555 | 484 |
+| passes completed | 447 | 378 |
+| pressures | 129 | 158 |
+| pressures attacking third | 30 | 32 |
+| tackles | 16 | 13 |
+| tackles won | 12 | 10 |
+| interceptions | 15 | 15 |
+| turnovers won | 101 | 99 |
+| turnovers won attacking third | 11 | 15 |
+| fouls | 10 | 13 |
+| offsides | 1 | 1 |
+| corners | 5 | 2 |
+| throw ins | 15 | 17 |
+| goal kicks | 6 | 9 |
+| free kicks | 14 | 11 |
 | substitutions | 3 | 5 |
-| pass completion | 81.5% | 80.5% |
-| pass share (not possession) | 51.2% | 48.8% |
+| pass completion | 80.5% | 78.1% |
+| pass share (not possession) | 53.4% | 46.6% |
 
 ### Period 1
 
 | Stat | Northbridge Harriers | Kestrel Bay |
 |---|---:|---:|
-| possession (time-based estimate) | 52.6% | 47.4% |
-| goals | 0 | 0 |
-| shots | 5 | 5 |
-| shots on target | 3 | 1 |
-| passes | 312 | 278 |
-| passes completed | 259 | 225 |
-| pressures | 87 | 69 |
-| pressures attacking third | 22 | 8 |
-| tackles | 7 | 7 |
-| tackles won | 5 | 5 |
-| interceptions | 6 | 11 |
-| turnovers won | 47 | 51 |
-| turnovers won attacking third | 4 | 4 |
-| fouls | 2 | 4 |
-| offsides | 0 | 2 |
-| corners | 3 | 1 |
+| possession (time-based estimate) | 52.4% | 47.6% |
+| goals | 0 | 2 |
+| shots | 8 | 5 |
+| shots on target | 2 | 2 |
+| passes | 285 | 253 |
+| passes completed | 231 | 199 |
+| pressures | 63 | 68 |
+| pressures attacking third | 18 | 4 |
+| tackles | 5 | 4 |
+| tackles won | 5 | 3 |
+| interceptions | 8 | 8 |
+| turnovers won | 49 | 50 |
+| turnovers won attacking third | 6 | 5 |
+| fouls | 3 | 6 |
+| offsides | 1 | 0 |
+| corners | 2 | 0 |
 | throw ins | 9 | 7 |
-| goal kicks | 3 | 3 |
-| free kicks | 6 | 2 |
+| goal kicks | 3 | 5 |
+| free kicks | 6 | 4 |
 | substitutions | 0 | 0 |
-| pass completion | 83.0% | 80.9% |
-| pass share (not possession) | 52.9% | 47.1% |
+| pass completion | 81.1% | 78.7% |
+| pass share (not possession) | 53.0% | 47.0% |
 
 ### Period 2
 
 | Stat | Northbridge Harriers | Kestrel Bay |
 |---|---:|---:|
-| possession (time-based estimate) | 49.6% | 50.4% |
-| goals | 0 | 1 |
-| shots | 4 | 8 |
-| shots on target | 0 | 4 |
-| passes | 284 | 290 |
-| passes completed | 227 | 232 |
-| pressures | 78 | 84 |
-| pressures attacking third | 17 | 27 |
-| tackles | 9 | 11 |
-| tackles won | 2 | 8 |
-| interceptions | 9 | 5 |
-| turnovers won | 56 | 55 |
-| turnovers won attacking third | 5 | 7 |
-| fouls | 6 | 4 |
-| offsides | 0 | 0 |
-| corners | 0 | 1 |
-| throw ins | 6 | 9 |
-| goal kicks | 5 | 4 |
-| free kicks | 4 | 6 |
+| possession (time-based estimate) | 54.7% | 45.3% |
+| goals | 1 | 1 |
+| shots | 5 | 7 |
+| shots on target | 2 | 3 |
+| passes | 270 | 231 |
+| passes completed | 216 | 179 |
+| pressures | 66 | 90 |
+| pressures attacking third | 12 | 28 |
+| tackles | 11 | 9 |
+| tackles won | 7 | 7 |
+| interceptions | 7 | 7 |
+| turnovers won | 52 | 49 |
+| turnovers won attacking third | 5 | 10 |
+| fouls | 7 | 7 |
+| offsides | 0 | 1 |
+| corners | 3 | 2 |
+| throw ins | 6 | 10 |
+| goal kicks | 3 | 4 |
+| free kicks | 8 | 7 |
 | substitutions | 3 | 5 |
-| pass completion | 79.9% | 80.0% |
-| pass share (not possession) | 49.5% | 50.5% |
+| pass completion | 80.0% | 77.5% |
+| pass share (not possession) | 53.9% | 46.1% |
 
 ## 15-minute trends
 
@@ -128,18 +144,18 @@ High pressures / high turnovers = pressures / possessions won in the team's atta
 
 | Window | Team | Possession | Passes | Pass compl. | Pressures | High pressures | High turnovers won | Shots |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
-| 0-15 | NBH | 61.6% | 121 | 87.6% | 22 | 7 | 2 | 2 |
-| 0-15 | KES | 38.4% | 78 | 82.1% | 27 | 3 | 1 | 2 |
-| 15-30 | NBH | 41.1% | 80 | 81.2% | 38 | 5 | 0 | 0 |
-| 15-30 | KES | 58.9% | 111 | 85.6% | 18 | 3 | 2 | 3 |
-| 30-45+ | NBH | 55.1% | 111 | 79.3% | 27 | 10 | 2 | 3 |
-| 30-45+ | KES | 44.9% | 89 | 74.2% | 24 | 2 | 1 | 0 |
-| 45-60 | NBH | 55.0% | 92 | 83.7% | 20 | 2 | 0 | 0 |
-| 45-60 | KES | 45.0% | 71 | 80.3% | 20 | 3 | 0 | 2 |
-| 60-75 | NBH | 51.7% | 90 | 80.0% | 23 | 8 | 5 | 3 |
-| 60-75 | KES | 48.3% | 90 | 74.4% | 30 | 11 | 2 | 1 |
-| 75-90+ | NBH | 44.5% | 102 | 76.5% | 35 | 7 | 0 | 1 |
-| 75-90+ | KES | 55.5% | 129 | 83.7% | 34 | 13 | 5 | 5 |
+| 0-15 | NBH | 50.5% | 86 | 84.9% | 25 | 6 | 2 | 5 |
+| 0-15 | KES | 49.5% | 79 | 82.3% | 21 | 2 | 3 | 2 |
+| 15-30 | NBH | 57.1% | 100 | 81.0% | 15 | 5 | 3 | 3 |
+| 15-30 | KES | 42.9% | 75 | 74.7% | 21 | 0 | 2 | 0 |
+| 30-45+ | NBH | 50.0% | 99 | 77.8% | 23 | 7 | 1 | 0 |
+| 30-45+ | KES | 50.0% | 99 | 78.8% | 26 | 2 | 0 | 3 |
+| 45-60 | NBH | 47.4% | 78 | 74.4% | 28 | 5 | 2 | 0 |
+| 45-60 | KES | 52.6% | 79 | 78.5% | 15 | 3 | 4 | 0 |
+| 60-75 | NBH | 62.3% | 91 | 81.3% | 19 | 7 | 2 | 2 |
+| 60-75 | KES | 37.7% | 58 | 72.4% | 39 | 8 | 2 | 2 |
+| 75-90+ | NBH | 54.8% | 101 | 83.2% | 19 | 0 | 1 | 3 |
+| 75-90+ | KES | 45.2% | 94 | 79.8% | 36 | 17 | 4 | 5 |
 
 ## Possession sequences
 
@@ -147,180 +163,185 @@ A sequence is an unbroken spell of one team's possession; restarts by the same t
 
 | Team | Sequences | Mean passes | Sequences with 10+ passes | Ended in shot/goal |
 |---|---:|---:|---:|---:|
-| NBH | 132 | 4.5 | 14 | 8 |
-| KES | 132 | 4.3 | 12 | 13 |
+| NBH | 130 | 4.3 | 13 | 10 |
+| KES | 129 | 3.8 | 8 | 11 |
 
-How sequences ended: turnover (incomplete_pass) 150, pass out_of_play 38, turnover (interception) 31, turnover (tackle) 20, shot (off_target) 11, shot (saved) 6, pass offside 2, shot (blocked) 2, period end 2, shot (woodwork) 1, goal 1
+How sequences ended: turnover (incomplete_pass) 144, pass out_of_play 38, turnover (interception) 30, turnover (tackle) 22, shot (off_target) 12, goal 4, shot (saved) 2, shot (blocked) 2, pass offside 2, period end 2, shot (woodwork) 1
 
 ### Longest sequences per team
 
-**NBH 2'–4': 20 passes, 80s, events 42–68, ended: turnover (tackle)**
+**NBH 24'–25': 13 passes, 43s, events 414–427, ended: turnover (incomplete_pass)**
 
 ```
-   42      2' P1   117.6s possession_change NBH  Bram Vettel [interception] (67.2,67.0)
-   43      2' P1   119.0s pass              NBH  Bram Vettel -> Matteo Sorr [complete] (67.2,67.0)->(77.6,56.4)
-   44      3' P1   123.4s pass              NBH  Matteo Sorr -> Caspian Hale [complete] (80.5,53.6)->(87.0,49.4)
-   45      3' P1   126.5s pass              NBH  Caspian Hale -> Kofi Marlan [complete] (84.0,51.3)->(94.3,51.9)
-   46      3' P1   130.3s pressure          KES  Femi Castell on Kofi Marlan (94.6,50.0)
-   47      3' P1   131.2s pass              NBH  Kofi Marlan -> Dario Quill [complete] (94.6,50.0)->(101.3,39.9)
-   48      3' P1   134.9s pass              NBH  Dario Quill -> Nils Ardent [complete] (99.9,39.3)->(100.7,38.4)
-   49      3' P1   138.2s pass              NBH  Nils Ardent -> Bram Vettel [complete] (99.3,35.6)->(99.1,19.3)
-   50      3' P1   141.5s pass              NBH  Bram Vettel -> Rui Okonde [complete] (103.5,23.4)->(104.0,40.4)
-   51      3' P1   145.5s pass              NBH  Rui Okonde -> Caspian Hale [complete] (103.1,39.0)->(104.0,13.3)
-   52      3' P1   148.6s pass              NBH  Caspian Hale -> Kofi Marlan [complete] (103.5,12.3)->(97.2,12.1)
-   53      3' P1   152.7s pass              NBH  Kofi Marlan -> Nils Ardent [complete] (100.1,10.1)->(98.4,32.5)
-   54      3' P1   156.8s pressure          KES  Ansel Morrow on Nils Ardent (98.4,30.3)
-   55      3' P1   157.3s pass              NBH  Nils Ardent -> Matteo Sorr [complete] (98.4,30.3)->(98.5,42.0)
-   56      3' P1   161.8s pass              NBH  Matteo Sorr -> Kofi Marlan [complete] (100.5,39.4)->(80.2,42.4)
-   57      3' P1   166.6s pass              NBH  Kofi Marlan -> Bram Vettel [complete] (84.6,39.2)->(75.4,48.9)
-   58      3' P1   171.0s pressure          KES  Yusuf Lenk on Bram Vettel (85.2,44.9)
-   59      3' P1   171.3s pass              NBH  Bram Vettel -> Kofi Marlan [complete] (85.2,44.9)->(82.7,53.0)
-   60      3' P1   174.9s pressure          KES  Colm Strand on Kofi Marlan (83.9,60.3)
-   61      3' P1   175.1s tackle            KES  Colm Strand [lost] on Kofi Marlan (83.9,60.3)
-   62      3' P1   175.9s pass              NBH  Kofi Marlan -> Eli Brandt [complete] (83.9,60.3)->(73.2,41.3)
-   63      3' P1   179.1s pass              NBH  Eli Brandt -> Kofi Marlan [complete] (76.6,42.6)->(65.9,29.9)
-   64      4' P1   182.7s pass              NBH  Kofi Marlan -> Jory Pellan [complete] (69.0,30.3)->(56.6,19.5)
-   65      4' P1   187.4s pass              NBH  Jory Pellan -> Kofi Marlan [complete] (57.0,14.5)->(50.4,35.4)
-   66      4' P1   190.8s pass              NBH  Kofi Marlan -> Jory Pellan [complete] (49.2,31.2)->(41.9,28.6)
-   67      4' P1   193.0s pass              NBH  Jory Pellan -> Caspian Hale [complete] (47.8,24.1)->(46.2,36.6)
-   68      4' P1   197.6s tackle            KES  Sid Harlow [won] on Caspian Hale (48.5,39.0)
+  414     24' P1  1410.6s possession_change NBH  Rui Okonde [incomplete_pass] (19.9,39.5)
+  415     24' P1  1411.2s pass              NBH  Rui Okonde -> Dario Quill [complete] (19.9,39.5)->(37.7,24.5)
+  416     24' P1  1414.6s pass              NBH  Dario Quill -> Rui Okonde [complete] (40.6,19.9)->(31.5,21.0)
+  417     24' P1  1417.9s pass              NBH  Rui Okonde -> Nils Ardent [complete] (33.6,20.7)->(32.9,14.6)
+  418     24' P1  1420.3s pass              NBH  Nils Ardent -> Caspian Hale [complete] (31.7,14.2)->(37.6,12.8)
+  419     24' P1  1423.9s pass              NBH  Caspian Hale -> Eli Brandt [complete] (42.2,13.3)->(43.1,13.5)
+  420     24' P1  1427.9s pass              NBH  Eli Brandt -> Dario Quill [complete] (44.5,16.9)->(57.6,28.7)
+  421     24' P1  1431.8s pass              NBH  Dario Quill -> Nils Ardent [complete] (55.2,24.8)->(49.9,39.9)
+  422     24' P1  1434.8s pass              NBH  Nils Ardent -> Matteo Sorr [complete] (46.9,41.6)->(53.8,56.1)
+  423     24' P1  1437.3s pass              NBH  Matteo Sorr -> Odran Keel [complete] (60.3,53.4)->(81.1,35.5)
+  424     25' P1  1442.3s pass              NBH  Odran Keel -> Rui Okonde [complete] (78.1,40.8)->(72.3,41.8)
+  425     25' P1  1446.6s pass              NBH  Rui Okonde -> Dario Quill [complete] (73.5,44.1)->(68.1,37.0)
+  426     25' P1  1449.8s pass              NBH  Dario Quill -> Kofi Marlan [complete] (71.1,35.5)->(85.4,32.7)
+  427     25' P1  1453.4s pass              NBH  Kofi Marlan [incomplete] (88.6,28.1)->(89.0,47.8)
 ```
 
-**NBH 29'–29': 14 passes, 50s, events 572–590, ended: pass out_of_play**
+**NBH 36'–37': 13 passes, 46s, events 664–682, ended: turnover (incomplete_pass)**
 
 ```
-  572     29' P1  1689.4s possession_change NBH  Bram Vettel [tackle] (62.1,61.0)
-  573     29' P1  1689.4s pass              NBH  Bram Vettel -> Caspian Hale [complete] (62.1,61.0)->(98.9,52.8)
-  574     29' P1  1693.7s pass              NBH  Caspian Hale -> Bram Vettel [complete] (102.0,53.8)->(104.0,49.2)
-  575     29' P1  1697.8s pass              NBH  Bram Vettel -> Kofi Marlan [complete] (101.0,46.2)->(100.4,46.7)
-  576     29' P1  1701.5s pressure          KES  Ansel Morrow on Kofi Marlan (103.1,42.1)
-  577     29' P1  1701.9s pass              NBH  Kofi Marlan -> Dario Quill [complete] (103.1,42.1)->(87.4,38.3)
-  578     29' P1  1706.3s pass              NBH  Dario Quill -> Kofi Marlan [complete] (84.4,31.9)->(89.4,25.2)
-  579     29' P1  1710.8s pass              NBH  Kofi Marlan -> Dario Quill [complete] (87.3,22.9)->(89.9,29.7)
-  580     29' P1  1714.3s pass              NBH  Dario Quill -> Rui Okonde [complete] (91.5,33.7)->(98.5,34.3)
-  581     29' P1  1716.2s pressure          KES  Yusuf Lenk on Rui Okonde (96.4,34.2)
-  582     29' P1  1717.2s pass              NBH  Rui Okonde -> Kofi Marlan [complete] (96.4,34.2)->(104.0,46.2)
-  583     29' P1  1721.4s pressure          KES  Yusuf Lenk on Kofi Marlan (103.5,42.1)
-  584     29' P1  1722.3s pass              NBH  Kofi Marlan -> Nils Ardent [complete] (103.5,42.1)->(104.0,45.5)
-  585     29' P1  1725.2s pass              NBH  Nils Ardent -> Kofi Marlan [complete] (103.5,45.9)->(104.0,46.8)
-  586     29' P1  1729.1s pressure          KES  Lucan Brisk on Kofi Marlan (101.8,45.5)
-  587     29' P1  1730.0s pass              NBH  Kofi Marlan -> Bram Vettel [complete] (101.8,45.5)->(104.0,54.6)
-  588     29' P1  1732.4s pass              NBH  Bram Vettel -> Kofi Marlan [complete] (103.5,57.0)->(104.0,50.0)
-  589     29' P1  1734.6s pass              NBH  Kofi Marlan -> Eli Brandt [complete] (103.5,52.5)->(102.9,37.7)
-  590     29' P1  1739.3s pass              NBH  Eli Brandt [out_of_play] (103.5,35.8)->(105.0,17.4)
+  664     36' P1  2124.7s possession_change NBH  Odran Keel [incomplete_pass] (27.1,43.5)
+  665     36' P1  2125.9s pass              NBH  Odran Keel -> Rui Okonde [complete] (27.1,43.5)->(36.8,40.7)
+  666     36' P1  2130.6s pressure          KES  Yusuf Lenk on Rui Okonde (40.1,40.3)
+  667     36' P1  2130.9s pass              NBH  Rui Okonde -> Nils Ardent [complete] (40.1,40.3)->(60.8,47.3)
+  668     36' P1  2134.9s pass              NBH  Nils Ardent -> Dario Quill [complete] (65.1,48.1)->(64.8,43.2)
+  669     36' P1  2137.1s pass              NBH  Dario Quill -> Bram Vettel [complete] (65.0,41.7)->(70.6,55.1)
+  670     36' P1  2141.4s pressure          KES  Colm Strand on Bram Vettel (71.8,56.3)
+  671     36' P1  2141.8s pass              NBH  Bram Vettel -> Caspian Hale [complete] (71.8,56.3)->(72.5,40.9)
+  672     36' P1  2144.8s pass              NBH  Caspian Hale -> Matteo Sorr [complete] (72.9,41.6)->(62.9,26.7)
+  673     36' P1  2147.7s pass              NBH  Matteo Sorr -> Odran Keel [complete] (68.2,29.2)->(67.9,24.6)
+  674     36' P1  2151.4s pressure          KES  Femi Castell on Odran Keel (74.1,19.1)
+  675     36' P1  2151.7s pass              NBH  Odran Keel -> Eli Brandt [complete] (74.1,19.1)->(58.1,5.9)
+  676     36' P1  2154.5s pass              NBH  Eli Brandt -> Dario Quill [complete] (58.8,5.4)->(60.4,16.2)
+  677     36' P1  2158.2s pass              NBH  Dario Quill -> Caspian Hale [complete] (62.3,17.4)->(72.1,16.0)
+  678     37' P1  2161.3s pressure          KES  Colm Strand on Caspian Hale (73.8,11.8)
+  679     37' P1  2161.6s pass              NBH  Caspian Hale -> Bram Vettel [complete] (73.8,11.8)->(72.2,7.4)
+  680     37' P1  2165.7s pass              NBH  Bram Vettel -> Dario Quill [complete] (80.9,5.5)->(93.9,9.4)
+  681     37' P1  2170.3s pressure          KES  Oren Tasker on Dario Quill (94.5,12.0)
+  682     37' P1  2170.8s pass              NBH  Dario Quill [incomplete] (94.5,12.0)->(100.9,37.3)
 ```
 
-**KES 19'–21': 32 passes, 125s, events 380–425, ended: turnover (incomplete_pass)**
+**KES 50'–51': 15 passes, 69s, events 924–943, ended: turnover (incomplete_pass)**
 
 ```
-  380     19' P1  1120.7s possession_change KES  Teo Barrigan [interception] (103.5,11.4)
-  381     19' P1  1121.3s pass              KES  Teo Barrigan -> Femi Castell [complete] (103.5,11.4)->(103.1,25.9)
-  382     19' P1  1123.7s pressure          NBH  Caspian Hale on Femi Castell (97.6,24.6)
-  383     19' P1  1124.8s pass              KES  Femi Castell -> Teo Barrigan [complete] (97.6,24.6)->(92.0,32.4)
-  384     19' P1  1127.2s pass              KES  Teo Barrigan -> Ansel Morrow [complete] (91.4,33.7)->(88.1,30.1)
-  385     19' P1  1129.7s pass              KES  Ansel Morrow -> Colm Strand [complete] (91.1,28.1)->(72.4,40.5)
-  386     19' P1  1135.1s pass              KES  Colm Strand -> Lucan Brisk [complete] (71.4,41.5)->(87.9,31.5)
-  387     19' P1  1137.8s pressure          NBH  Caspian Hale on Lucan Brisk (84.8,27.4)
-  388     19' P1  1138.4s pass              KES  Lucan Brisk -> Yusuf Lenk [complete] (84.8,27.4)->(70.4,35.4)
-  389     20' P1  1142.7s pass              KES  Yusuf Lenk -> Oren Tasker [complete] (65.9,33.1)->(44.4,24.8)
-  390     20' P1  1147.1s pass              KES  Oren Tasker -> Femi Castell [complete] (42.5,25.7)->(43.8,17.1)
-  391     20' P1  1149.0s pass              KES  Femi Castell -> Ansel Morrow [complete] (43.4,13.1)->(32.2,1.0)
-  392     20' P1  1152.8s pass              KES  Ansel Morrow -> Lucan Brisk [complete] (30.3,2.2)->(35.1,8.2)
-  393     20' P1  1156.7s pressure          NBH  Matteo Sorr on Lucan Brisk (32.9,10.1)
-  394     20' P1  1157.5s pass              KES  Lucan Brisk -> Sid Harlow [complete] (32.9,10.1)->(34.8,12.5)
-  395     20' P1  1161.1s pass              KES  Sid Harlow -> Milo Grange [complete] (28.9,14.0)->(26.4,8.1)
-  396     20' P1  1164.8s pass              KES  Milo Grange -> Oren Tasker [complete] (28.6,12.1)->(32.6,29.6)
-  397     20' P1  1168.2s pressure          NBH  Matteo Sorr on Oren Tasker (31.6,25.8)
-  398     20' P1  1169.0s pass              KES  Oren Tasker -> Femi Castell [complete] (31.6,25.8)->(23.6,47.4)
-  399     20' P1  1173.3s pressure          NBH  Rui Okonde on Femi Castell (20.9,46.9)
-  400     20' P1  1173.9s pass              KES  Femi Castell -> Milo Grange [complete] (20.9,46.9)->(18.6,37.3)
-  401     20' P1  1178.0s pressure          NBH  Rui Okonde on Milo Grange (21.5,35.8)
-  402     20' P1  1179.1s pass              KES  Milo Grange -> Lucan Brisk [complete] (21.5,35.8)->(24.8,29.1)
-  403     20' P1  1183.0s pass              KES  Lucan Brisk -> Femi Castell [complete] (18.8,34.2)->(28.8,42.2)
-  404     20' P1  1187.2s pressure          NBH  Caspian Hale on Femi Castell (24.7,47.2)
-  405     20' P1  1188.1s pass              KES  Femi Castell -> Sid Harlow [complete] (24.7,47.2)->(38.0,51.7)
-  406     20' P1  1192.4s pass              KES  Sid Harlow -> Oren Tasker [complete] (37.2,56.1)->(54.6,67.0)
-  407     20' P1  1196.7s pass              KES  Oren Tasker -> Yusuf Lenk [complete] (55.7,67.0)->(55.5,56.4)
-  408     20' P1  1200.0s pressure          NBH  Rui Okonde on Yusuf Lenk (48.2,53.9)
-  409     21' P1  1200.9s pass              KES  Yusuf Lenk -> Oren Tasker [complete] (48.2,53.9)->(60.5,38.9)
-  410     21' P1  1203.7s pass              KES  Oren Tasker -> Joaquin Vell [complete] (61.7,38.2)->(65.3,39.3)
-  411     21' P1  1207.9s pass              KES  Joaquin Vell -> Teo Barrigan [complete] (63.0,35.4)->(73.1,26.2)
-  412     21' P1  1211.7s pressure          NBH  Rui Okonde on Teo Barrigan (71.1,24.6)
-  413     21' P1  1212.4s pass              KES  Teo Barrigan -> Sid Harlow [complete] (71.1,24.6)->(55.4,22.4)
-  414     21' P1  1216.8s pass              KES  Sid Harlow -> Lucan Brisk [complete] (51.4,25.7)->(57.2,14.1)
-  415     21' P1  1219.8s pass              KES  Lucan Brisk -> Teo Barrigan [complete] (55.6,16.4)->(44.8,33.0)
-  416     21' P1  1225.0s pass              KES  Teo Barrigan -> Sid Harlow [complete] (41.7,34.2)->(30.0,11.3)
-  417     21' P1  1230.1s pass              KES  Sid Harlow -> Colm Strand [complete] (31.1,10.0)->(37.9,7.3)
-  418     21' P1  1232.8s pass              KES  Colm Strand -> Femi Castell [complete] (36.0,3.2)->(24.4,1.0)
-  419     21' P1  1235.2s pressure          NBH  Odran Keel on Femi Castell (22.7,3.6)
-  420     21' P1  1235.9s pass              KES  Femi Castell -> Milo Grange [complete] (22.7,3.6)->(22.7,20.0)
-  421     21' P1  1240.9s pressure          NBH  Rui Okonde on Milo Grange (17.4,24.2)
-  422     21' P1  1241.2s tackle            NBH  Rui Okonde [lost] on Milo Grange (17.4,24.2)
-  423     21' P1  1241.8s pass              KES  Milo Grange -> Sid Harlow [complete] (17.4,24.2)->(22.2,32.7)
-  424     21' P1  1244.6s pressure          NBH  Matteo Sorr on Sid Harlow (21.2,31.0)
-  425     21' P1  1245.4s pass              KES  Sid Harlow [incomplete] (21.2,31.0)->(22.2,26.5)
+  924     50' P2   255.8s restart           KES  Colm Strand [throw_in] (15.9,0.0)
+  925     50' P2   255.8s pass              KES  Colm Strand -> Ansel Morrow [complete] (15.9,0.0)->(22.4,9.2)
+  926     50' P2   258.5s pass              KES  Ansel Morrow -> Yusuf Lenk [complete] (26.4,9.3)->(39.2,11.1)
+  927     50' P2   261.9s pressure          NBH  Nils Ardent on Yusuf Lenk (43.0,11.3)
+  928     50' P2   262.4s pass              KES  Yusuf Lenk -> Rafe Ondine [complete] (43.0,11.3)->(6.9,34.4)
+  929     50' P2   268.5s pass              KES  Rafe Ondine -> Lucan Brisk [complete] (10.1,32.5)->(20.8,26.7)
+  930     50' P2   272.2s pass              KES  Lucan Brisk -> Rafe Ondine [complete] (17.9,27.5)->(10.6,18.0)
+  931     50' P2   275.0s pass              KES  Rafe Ondine -> Zeno Farrell [complete] (14.4,17.7)->(30.2,12.4)
+  932     50' P2   278.3s pass              KES  Zeno Farrell -> Femi Castell [complete] (30.2,14.3)->(27.8,25.1)
+  933     50' P2   281.3s pass              KES  Femi Castell -> Ansel Morrow [complete] (29.6,25.9)->(49.2,20.4)
+  934     50' P2   284.4s pass              KES  Ansel Morrow -> Femi Castell [complete] (49.7,18.2)->(44.8,21.7)
+  935     50' P2   288.6s foul              NBH  Sami Torvik on Femi Castell (45.9,20.0)
+  936     51' P2   307.1s restart           KES  Ansel Morrow [free_kick] (45.9,20.0)
+  937     51' P2   307.1s pass              KES  Ansel Morrow -> Dex Holloway [complete] (45.9,20.0)->(48.1,19.5)
+  938     51' P2   311.1s pass              KES  Dex Holloway -> Zeno Farrell [complete] (50.8,20.3)->(56.5,19.3)
+  939     51' P2   314.2s pass              KES  Zeno Farrell -> Lucan Brisk [complete] (59.0,17.1)->(69.4,3.5)
+  940     51' P2   316.9s pass              KES  Lucan Brisk -> Sid Harlow [complete] (73.6,7.4)->(75.7,16.0)
+  941     51' P2   320.7s pressure          NBH  Caspian Hale on Sid Harlow (78.3,17.2)
+  942     51' P2   321.4s pass              KES  Sid Harlow -> Milo Grange [complete] (78.3,17.2)->(82.2,18.2)
+  943     51' P2   325.0s pass              KES  Milo Grange [incomplete] (82.9,20.5)->(84.4,20.4)
 ```
 
-**KES 81'–82': 13 passes, 75s, events 1590–1612, ended: turnover (incomplete_pass)**
+**KES 90+3'–90+4': 13 passes, 44s, events 1666–1686, ended: turnover (tackle)**
 
 ```
- 1590     81' P2  2112.1s restart           KES  Arlo Penn [throw_in] (27.3,0.0)
- 1591     81' P2  2112.1s pass              KES  Arlo Penn -> Teo Barrigan [complete] (27.3,0.0)->(21.2,12.0)
- 1592     81' P2  2114.6s pressure          NBH  Kofi Marlan on Teo Barrigan (23.0,9.0)
- 1593     81' P2  2115.5s pass              KES  Teo Barrigan -> Lucan Brisk [complete] (23.0,9.0)->(22.9,17.4)
- 1594     81' P2  2119.3s pressure          NBH  Pax Deline on Lucan Brisk (25.6,13.7)
- 1595     81' P2  2119.9s pass              KES  Lucan Brisk -> Dex Holloway [complete] (25.6,13.7)->(25.6,16.5)
- 1596     81' P2  2123.7s pressure          NBH  Kofi Marlan on Dex Holloway (25.1,14.2)
- 1597     81' P2  2124.1s pass              KES  Dex Holloway -> Lucan Brisk [complete] (25.1,14.2)->(27.8,9.6)
- 1598     81' P2  2126.4s pass              KES  Lucan Brisk -> Kai Lunde [complete] (30.6,10.3)->(34.3,21.7)
- 1599     81' P2  2130.3s pressure          NBH  Hugo Ressel on Kai Lunde (40.4,23.2)
- 1600     81' P2  2131.3s foul              NBH  Hugo Ressel on Kai Lunde (40.4,23.2)
- 1601     81' P2  2157.8s restart           KES  Femi Castell [free_kick] (40.4,23.2)
- 1602     81' P2  2157.8s pass              KES  Femi Castell -> Zeno Farrell [complete] (40.4,23.2)->(35.5,24.8)
- 1603     82' P2  2160.1s pressure          NBH  Wyn Ostrava on Zeno Farrell (36.4,21.7)
- 1604     82' P2  2161.4s pass              KES  Zeno Farrell -> Arlo Penn [complete] (36.4,21.7)->(23.7,43.5)
- 1605     82' P2  2165.7s pass              KES  Arlo Penn -> Zeno Farrell [complete] (29.5,40.9)->(44.1,23.1)
- 1606     82' P2  2170.8s pressure          NBH  Hugo Ressel on Zeno Farrell (50.6,19.6)
- 1607     82' P2  2172.0s pass              KES  Zeno Farrell -> Arlo Penn [complete] (50.6,19.6)->(42.7,4.1)
- 1608     82' P2  2175.4s pass              KES  Arlo Penn -> Zeno Farrell [complete] (40.1,6.5)->(40.8,9.6)
- 1609     82' P2  2178.2s pressure          NBH  Nils Ardent on Zeno Farrell (46.4,12.9)
- 1610     82' P2  2179.1s pass              KES  Zeno Farrell -> Joaquin Vell [complete] (46.4,12.9)->(62.9,14.5)
- 1611     82' P2  2183.5s pass              KES  Joaquin Vell -> Kai Lunde [complete] (62.9,11.2)->(87.5,10.0)
- 1612     82' P2  2187.4s pass              KES  Kai Lunde [incomplete] (89.9,9.2)->(97.1,29.8)
+ 1666   90+3' P2  2840.5s possession_change KES  Yusuf Lenk [incomplete_pass] (23.8,38.9)
+ 1667   90+3' P2  2841.7s pass              KES  Yusuf Lenk -> Dex Holloway [complete] (23.8,38.9)->(21.8,57.9)
+ 1668   90+3' P2  2846.1s pass              KES  Dex Holloway -> Ansel Morrow [complete] (23.1,64.2)->(20.0,57.0)
+ 1669   90+3' P2  2848.5s pass              KES  Ansel Morrow -> Dex Holloway [complete] (22.0,56.3)->(34.6,50.7)
+ 1670   90+3' P2  2850.8s pressure          NBH  Pax Deline on Dex Holloway (42.3,53.7)
+ 1671   90+3' P2  2851.6s pass              KES  Dex Holloway -> Remy Aster [complete] (42.3,53.7)->(35.3,60.0)
+ 1672   90+3' P2  2855.1s pressure          NBH  Rui Okonde on Remy Aster (36.6,60.1)
+ 1673   90+3' P2  2855.6s pass              KES  Remy Aster -> Dex Holloway [complete] (36.6,60.1)->(31.9,58.3)
+ 1674   90+3' P2  2857.8s pressure          NBH  Nils Ardent on Dex Holloway (37.6,59.3)
+ 1675   90+3' P2  2858.8s pass              KES  Dex Holloway -> Bastian Crowe [complete] (37.6,59.3)->(46.5,61.4)
+ 1676   90+3' P2  2863.0s pass              KES  Bastian Crowe -> Remy Aster [complete] (51.3,59.2)->(49.2,54.2)
+ 1677   90+3' P2  2865.1s pass              KES  Remy Aster -> Yusuf Lenk [complete] (52.2,54.6)->(63.1,47.1)
+ 1678   90+3' P2  2867.3s pass              KES  Yusuf Lenk -> Remy Aster [complete] (68.4,44.4)->(66.1,57.0)
+ 1679   90+3' P2  2871.3s pressure          NBH  Matteo Sorr on Remy Aster (69.1,54.1)
+ 1680   90+3' P2  2872.3s pass              KES  Remy Aster -> Dex Holloway [complete] (69.1,54.1)->(75.0,39.7)
+ 1681   90+3' P2  2875.5s pressure          NBH  Nils Ardent on Dex Holloway (75.6,39.0)
+ 1682   90+3' P2  2875.9s pass              KES  Dex Holloway -> Sid Harlow [complete] (75.6,39.0)->(75.5,38.0)
+ 1683   90+3' P2  2878.1s pass              KES  Sid Harlow -> Zeno Farrell [complete] (79.7,39.3)->(89.2,44.3)
+ 1684   90+4' P2  2880.9s pass              KES  Zeno Farrell -> Bastian Crowe [complete] (86.2,46.1)->(83.1,25.6)
+ 1685   90+4' P2  2883.6s pressure          NBH  Lio Fenner on Bastian Crowe (84.5,23.7)
+ 1686   90+4' P2  2884.3s tackle            NBH  Lio Fenner [won] on Bastian Crowe (84.5,23.7)
 ```
 
 ## Build-up to goals
 
-### 89' KES goal — KES 89'–89': 7 passes, 29s, events 1757–1767, ended: goal
+### 7' KES goal — KES 7'–7': 5 passes, 21s, events 123–130, ended: goal
 
 ```
- 1757     89' P2  2581.4s possession_change KES  Dex Holloway [incomplete_pass] (6.1,42.3)
- 1758     89' P2  2582.6s pressure          NBH  Kofi Marlan on Dex Holloway (6.1,42.3)
- 1759     89' P2  2583.0s pass              KES  Dex Holloway -> Rafe Ondine [complete] (6.1,42.3)->(9.0,31.1)
- 1760     89' P2  2586.6s pass              KES  Rafe Ondine -> Teo Barrigan [complete] (13.2,33.4)->(22.7,27.2)
- 1761     89' P2  2589.9s pass              KES  Teo Barrigan -> Ansel Morrow [complete] (23.3,23.9)->(32.6,16.1)
- 1762     89' P2  2593.1s pass              KES  Ansel Morrow -> Zeno Farrell [complete] (36.0,16.4)->(47.3,27.7)
- 1763     89' P2  2596.9s pass              KES  Zeno Farrell -> Arlo Penn [complete] (44.3,27.0)->(66.1,32.6)
- 1764     89' P2  2602.0s pass              KES  Arlo Penn -> Zeno Farrell [complete] (63.6,35.7)->(89.3,29.2)
- 1765     89' P2  2606.0s pass              KES  Zeno Farrell -> Remy Aster [complete] (95.2,26.5)->(104.0,28.1)
- 1766     89' P2  2610.1s pressure          NBH  Hugo Ressel on Remy Aster (101.0,28.2)
- 1767     89' P2  2610.6s shot              KES  Remy Aster [goal, right_foot] (101.0,28.2)
+  123      7' P1   372.1s possession_change KES  Joaquin Vell [incomplete_pass] (84.4,22.0)
+  124      7' P1   373.0s pass              KES  Joaquin Vell -> Teo Barrigan [complete] (84.4,22.0)->(63.9,24.3)
+  125      7' P1   378.3s pass              KES  Teo Barrigan -> Femi Castell [complete] (63.1,29.9)->(52.9,40.3)
+  126      7' P1   382.5s pressure          NBH  Dario Quill on Femi Castell (50.6,32.9)
+  127      7' P1   382.9s pass              KES  Femi Castell -> Sid Harlow [complete] (50.6,32.9)->(23.0,22.9)
+  128      7' P1   386.3s pass              KES  Sid Harlow -> Lucan Brisk [complete] (17.5,24.1)->(20.0,32.1)
+  129      7' P1   389.9s pass              KES  Lucan Brisk -> Femi Castell [complete] (17.2,36.0)->(12.2,31.5)
+  130      7' P1   393.1s shot              KES  Femi Castell [goal, left_foot] (12.5,34.0)
+```
+
+### 41' KES goal — KES 40'–41': 8 passes, 30s, events 745–757, ended: goal
+
+```
+  745     40' P1  2372.2s possession_change KES  Colm Strand [incomplete_pass] (79.5,8.2)
+  746     40' P1  2372.9s pressure          NBH  Rui Okonde on Colm Strand (79.5,8.2)
+  747     40' P1  2374.0s pass              KES  Colm Strand -> Femi Castell [complete] (79.5,8.2)->(41.7,11.3)
+  748     40' P1  2378.6s pass              KES  Femi Castell -> Sid Harlow [complete] (39.0,8.5)->(26.7,20.0)
+  749     40' P1  2381.2s pressure          NBH  Jory Pellan on Sid Harlow (21.7,22.4)
+  750     40' P1  2381.8s pass              KES  Sid Harlow -> Lucan Brisk [complete] (21.7,22.4)->(25.4,31.5)
+  751     40' P1  2385.1s pass              KES  Lucan Brisk -> Sid Harlow [complete] (24.2,32.2)->(20.3,32.6)
+  752     40' P1  2387.5s pass              KES  Sid Harlow -> Oren Tasker [complete] (14.1,35.1)->(22.4,59.8)
+  753     40' P1  2393.0s pressure          NBH  Odran Keel on Oren Tasker (18.4,63.3)
+  754     40' P1  2394.1s pass              KES  Oren Tasker -> Femi Castell [complete] (18.4,63.3)->(9.1,36.5)
+  755     40' P1  2396.7s pass              KES  Femi Castell -> Ansel Morrow [complete] (9.1,36.5)->(7.3,40.1)
+  756     40' P1  2399.6s pass              KES  Ansel Morrow -> Milo Grange [complete] (8.7,39.3)->(5.5,29.8)
+  757     41' P1  2401.8s shot              KES  Milo Grange [goal, left_foot] (4.6,30.8)
+```
+
+### 78' KES goal — KES 77'–78': 6 passes, 50s, events 1420–1431, ended: goal
+
+```
+ 1420     77' P2  1885.9s possession_change KES  Joaquin Vell [tackle] (35.9,60.4)
+ 1421     77' P2  1885.9s pass              KES  Joaquin Vell -> Remy Aster [complete] (35.9,60.4)->(38.7,62.9)
+ 1422     77' P2  1887.7s pass              KES  Remy Aster -> Femi Castell [complete] (42.6,55.0)->(53.1,48.6)
+ 1423     77' P2  1891.8s pressure          NBH  Nils Ardent on Femi Castell (55.1,46.3)
+ 1424     77' P2  1892.7s pass              KES  Femi Castell -> Ansel Morrow [complete] (55.1,46.3)->(60.5,32.3)
+ 1425     77' P2  1897.3s pass              KES  Ansel Morrow -> Arlo Penn [complete] (60.9,28.1)->(61.2,32.9)
+ 1426     77' P2  1899.7s pass              KES  Arlo Penn -> Remy Aster [complete] (59.1,27.0)->(71.7,27.2)
+ 1427     77' P2  1904.0s pressure          NBH  Pax Deline on Remy Aster (78.3,29.1)
+ 1428     77' P2  1905.0s foul              NBH  Pax Deline on Remy Aster (78.3,29.1)
+ 1429     78' P2  1933.5s restart           KES  Sid Harlow [free_kick] (78.3,29.1)
+ 1430     78' P2  1933.5s pass              KES  Sid Harlow -> Femi Castell [complete] (78.3,29.1)->(100.0,31.2)
+ 1431     78' P2  1935.7s shot              KES  Femi Castell [goal, head] (100.0,31.2)
+```
+
+### 85' NBH goal — NBH 84'–85': 4 passes, 17s, events 1526–1534, ended: goal
+
+```
+ 1526     84' P2  2337.6s possession_change NBH  Rui Okonde [incomplete_pass] (52.4,63.4)
+ 1527     84' P2  2338.2s pass              NBH  Rui Okonde -> Caspian Hale [complete] (52.4,63.4)->(52.3,57.4)
+ 1528     85' P2  2340.1s pass              NBH  Caspian Hale -> Matteo Sorr [complete] (55.2,54.9)->(38.6,50.0)
+ 1529     85' P2  2345.2s pressure          KES  Bastian Crowe on Matteo Sorr (36.0,48.5)
+ 1530     85' P2  2346.0s pass              NBH  Matteo Sorr -> Rui Okonde [complete] (36.0,48.5)->(23.1,46.8)
+ 1531     85' P2  2349.4s pressure          KES  Remy Aster on Rui Okonde (21.2,44.8)
+ 1532     85' P2  2350.5s tackle            KES  Remy Aster [lost] on Rui Okonde (21.2,44.8)
+ 1533     85' P2  2351.7s pass              NBH  Rui Okonde -> Dario Quill [complete] (21.2,44.8)->(13.6,40.0)
+ 1534     85' P2  2354.2s shot              NBH  Dario Quill [goal, right_foot] (12.0,38.0)
 ```
 
 ## Event type counts
 
 | Event type | Count |
 |---|---:|
-| foul | 16 |
-| interception | 31 |
-| pass | 1164 |
+| foul | 23 |
+| interception | 30 |
+| pass | 1039 |
 | period_end | 2 |
-| possession_change | 209 |
-| pressure | 318 |
-| restart | 72 |
-| shot | 22 |
+| possession_change | 200 |
+| pressure | 287 |
+| restart | 85 |
+| shot | 25 |
 | substitution | 8 |
-| tackle | 34 |
+| tackle | 29 |
 
 ## First 30 events
 
@@ -341,20 +362,20 @@ How sequences ended: turnover (incomplete_pass) 150, pass out_of_play 38, turnov
    13      1' P1    38.6s pass              NBH  Caspian Hale -> Bram Vettel [complete] (45.6,50.1)->(43.5,61.7)
    14      1' P1    42.7s pass              NBH  Bram Vettel -> Caspian Hale [complete] (47.8,63.7)->(56.3,63.6)
    15      1' P1    44.8s pass              NBH  Caspian Hale -> Rui Okonde [complete] (53.5,60.6)->(64.2,62.0)
-   16      1' P1    47.1s pass              NBH  Rui Okonde -> Dario Quill [complete] (65.0,61.6)->(78.2,67.0)
-   17      1' P1    49.6s pressure          KES  Colm Strand on Dario Quill (75.2,67.0)
-   18      1' P1    50.6s pass              NBH  Dario Quill -> Caspian Hale [complete] (75.2,67.0)->(82.1,67.0)
-   19      1' P1    54.8s pass              NBH  Caspian Hale [incomplete] (82.0,64.7)->(104.0,67.0)
-   20      1' P1    56.7s interception      KES  Colm Strand (104.0,67.0)
-   21      1' P1    56.7s possession_change KES  Colm Strand [interception] (104.0,67.0)
-   22      1' P1    58.1s pass              KES  Colm Strand [incomplete] (104.0,67.0)->(103.6,67.0)
-   23      1' P1    58.7s possession_change NBH  Bram Vettel [incomplete_pass] (103.6,67.0)
-   24      1' P1    59.5s pressure          KES  Colm Strand on Bram Vettel (103.6,67.0)
-   25      2' P1    60.3s pass              NBH  Bram Vettel [incomplete] (103.6,67.0)->(97.6,34.9)
-   26      2' P1    62.9s interception      KES  Yusuf Lenk (97.6,34.9)
-   27      2' P1    62.9s possession_change KES  Yusuf Lenk [interception] (97.6,34.9)
-   28      2' P1    63.4s pass              KES  Yusuf Lenk [out_of_play] (97.6,34.9)->(83.5,0.0)
-   29      2' P1    81.3s restart           NBH  Rui Okonde [throw_in] (83.5,0.0)
+   16      1' P1    47.1s pass              NBH  Rui Okonde -> Dario Quill [complete] (65.0,61.6)->(78.2,59.6)
+   17      1' P1    49.6s pressure          KES  Colm Strand on Dario Quill (75.2,60.3)
+   18      1' P1    50.6s pass              NBH  Dario Quill [incomplete] (75.2,60.3)->(82.1,40.8)
+   19      1' P1    52.4s possession_change KES  Teo Barrigan [incomplete_pass] (82.1,40.8)
+   20      1' P1    53.9s pressure          NBH  Bram Vettel on Teo Barrigan (82.1,40.8)
+   21      1' P1    54.2s tackle            NBH  Bram Vettel [won] on Teo Barrigan (82.1,40.8)
+   22      1' P1    55.2s possession_change NBH  Bram Vettel [tackle] (82.1,40.8)
+   23      1' P1    55.2s pass              NBH  Bram Vettel -> Kofi Marlan [complete] (82.1,40.8)->(75.3,43.5)
+   24      1' P1    57.2s pass              NBH  Kofi Marlan -> Dario Quill [complete] (78.2,40.0)->(74.2,44.0)
+   25      1' P1    59.3s pressure          KES  Ansel Morrow on Dario Quill (81.2,43.2)
+   26      1' P1    59.7s pass              NBH  Dario Quill -> Kofi Marlan [complete] (81.2,43.2)->(86.7,58.4)
+   27      2' P1    64.7s pass              NBH  Kofi Marlan -> Caspian Hale [complete] (83.7,57.2)->(72.8,59.9)
+   28      2' P1    68.2s pressure          KES  Femi Castell on Caspian Hale (73.7,59.5)
+   29      2' P1    69.0s pass              NBH  Caspian Hale [out_of_play] (73.7,59.5)->(105.0,40.8)
 ```
 
 ## Unsupported match mechanics

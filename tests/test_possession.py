@@ -3,7 +3,12 @@ from functools import cache
 
 import pytest
 
-from beyond90.analytics.possession import possession_intervals, possession_sequences, summarize_possession
+from beyond90.analytics.possession import (
+    TimeCategory,
+    possession_intervals,
+    possession_sequences,
+    summarize_possession,
+)
 from beyond90.schemas import PeriodEndEvent, ShotEvent, ShotOutcome, SubstitutionEvent
 from beyond90.simulator import simulate_match
 from streams import SETUP, Stream
@@ -25,10 +30,35 @@ def mini_match():
 
 def test_time_based_possession_on_hand_built_stream():
     summary = summarize_possession(SETUP, possession_intervals(SETUP, mini_match()))
-    assert summary.in_play_ms == {"nbh": 4000, "kes": 1000 + 2000 + (2_730_000 - 20_000)}
+    assert summary.controlled_ms == {"nbh": 4000, "kes": 1000 + 2000 + (2_730_000 - 20_000)}
     assert summary.contested_ms == 1000  # incomplete pass until the turnover is resolved
-    assert summary.dead_ms == 11_000     # ball out until the throw-in
-    assert summary.share("nbh") == pytest.approx(4000 / (4000 + summary.in_play_ms["kes"]))
+    assert summary.stoppage_ms == 11_000  # ball out until the throw-in
+    assert summary.elapsed_ms == 2_730_000 - 1000
+    assert summary.share("nbh") == pytest.approx(4000 / (4000 + summary.controlled_ms["kes"]))
+
+
+def _shot_then(follow):
+    s = Stream()
+    s.kickoff("kes", "kes-09", clock_ms=0)
+    # kes attacks toward x=0 in period 1.
+    s.add("shot", team_id="kes", player_id="kes-09", location={"x": 12, "y": 34}, outcome="saved",
+          body_part="right_foot", clock_ms=10_000)
+    follow(s)
+    s.end_period(1)
+    return summarize_possession(SETUP, possession_intervals(SETUP, s.events))
+
+
+def test_loose_ball_followed_by_restart_is_a_stoppage():
+    summary = _shot_then(lambda s: s.add("restart", team_id="kes", restart_type="corner_kick",
+                                         player_id="kes-07", location={"x": 0, "y": 0}, clock_ms=40_000))
+    assert summary.stoppage_ms == 30_000 and summary.contested_ms == 0
+
+
+def test_loose_ball_recovered_in_play_is_contested():
+    summary = _shot_then(lambda s: s.add("possession_change", team_id="nbh", previous_team_id="kes",
+                                         cause="shot", player_id="nbh-01", location={"x": 2, "y": 34},
+                                         clock_ms=12_000))
+    assert summary.contested_ms == 2000 and summary.stoppage_ms == 0
 
 
 def test_possession_sequences_on_hand_built_stream():
@@ -53,7 +83,11 @@ def test_possession_time_accounts_for_all_match_time(seed):
     for period in (1, 2):
         in_period = [e for e in r.events if e.period == period]
         elapsed += in_period[-1].clock_ms - in_period[0].clock_ms
-    assert summary.ball_in_play_ms + summary.dead_ms == elapsed
+    # Mutually exclusive categories reconcile exactly with elapsed match time.
+    intervals = possession_intervals(r.setup, r.events)
+    assert sum(iv.duration_ms for iv in intervals) == elapsed == summary.elapsed_ms
+    assert sum(summary.controlled_ms.values()) + summary.contested_ms + summary.stoppage_ms == elapsed
+    assert all((iv.team_id is not None) == (iv.category is TimeCategory.CONTROLLED) for iv in intervals)
     assert summary.share("nbh") + summary.share("kes") == pytest.approx(1.0)
     assert 45 * 60_000 <= summary.ball_in_play_ms <= 75 * 60_000
 

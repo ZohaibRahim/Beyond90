@@ -1,4 +1,4 @@
-# Realism review — seed 42 (simulator 0.1.0)
+# Realism review — seed 42 (after Stage 2.6)
 
 For the project owner's football judgments. Claude has listed measured facts and open questions only; every "Your assessment" field is intentionally blank.
 
@@ -8,31 +8,39 @@ Materials:
 - 30-seed intervention review: `reports/private/intervention_review.md`
 - Regenerate: `PYTHONPATH=src .venv/Scripts/python -m beyond90.simulator --seed 42 --review 30`
 
+Note: the Stage 2.6 engine fix changes the random draws after the first affected pass, so seed 42 is now a different match (NBH 1–3 KES) from the one reviewed before. The old 29th-minute sequence no longer exists; the defect is covered by a multi-seed regression test.
+
+## Owner's earlier review notes (Stage 2.5)
+
+- Time accounting presentation was not mutually exclusive. Addressed in Stage 2.6.
+- Northbridge 29' sequence (events 573–589) had implausible passing on the goal line. Addressed in Stage 2.6.
+- The seed-42 winning goal began near Kestrel Bay's own goal; it must not be attributed to the high press.
+
 ## Open questions
 
-1. **Ball-in-play time.** Mean 63.0 min per match over 20 seeds (range 55.7–69.8); seed 42 has 71:54.
+1. **Ball-in-play time.** Mean 61.4 min per match over 20 seeds (57.8–64.8); seed 42: 62:20. Stoppages average 33.7 min.
    Your assessment:
 
-2. **Goalkeeper involvement.** About 14 passes received by goalkeepers per match (both teams) and about 15 passes made per keeper. Receptions come only from deliberate back passes, which are more likely for defenders, deep and under pressure.
+2. **Scoring.** 1.9 goals per match after removing the goal-line artifact (11.2 shots and 4.0 on target per team). Shot conversion has not been retuned.
    Your assessment:
 
-3. **Fouls under a high press.** The pressing team's foul rate did not change after the switch (0.099/min scripted vs 0.099 control).
+3. **Goalkeeper involvement.** About 15.6 passes received by goalkeepers per match (both teams), all from deliberate back passes.
    Your assessment:
 
-4. **Chance creation under a high press.** After the switch, the pressing team's shots/min rose 1.48× and the pressed team's fell to 0.75×. There is only a small "space behind the press" effect (an extra carry after a pass that beats pressure).
+4. **Fouls under a high press.** Unchanged after the switch (0.111 vs 0.109 per min).
    Your assessment:
 
-5. **Strength of the positive control.** Attacking-third pressures about 3.1×; pressed-team completion −4.5 points; sequences 4.2 → 3.5 passes.
+5. **Chance creation under a high press.** Pressing team shots per min 1.6× control; pressed team 0.88×.
    Your assessment:
 
-6. **Volume and rhythm.** About 503 passes per team at 78% completion, about 255 possession sequences per match with a mean of 4 passes, and 15-minute possession swings between 38% and 62% in seed 42.
+6. **Strength of the positive control.** Attacking-third pressures 3.4×; pressed-team completion from own third 82.1% → 76.2%; sequences 4.2 → 3.6 passes.
    Your assessment:
 
-7. **Set pieces.** 6.8 corners, 17.5 throw-ins and 5.5 goal kicks per team per match.
+7. **Final-third passing after the fix.** 2.5% of completed passes end within 7 m of the goal line; cut-backs are pulled toward the centre of the box.
    Your assessment:
 
-8. **Substitutions.** 3–5 per team, all in the second half (some at half-time), like-for-like.
+8. **Set pieces and substitutions.** 5.9 corners, 19.6 throw-ins and 5.0 goal kicks per team; 3–5 second-half substitutions, like-for-like.
    Your assessment:
 
-9. **Anything else in the report that looks wrong to a football eye** (sequence build-ups, goal build-ups, player involvement by position).
+9. **Anything else in the regenerated report** (time table, sequences, goal build-ups).
    Your assessment:
