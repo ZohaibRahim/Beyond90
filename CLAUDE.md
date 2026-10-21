@@ -7,8 +7,9 @@ Hackathon project (Microsoft Inside the Game, deadline 2026-10-27 23:59 PT). See
 - Activate env: `.venv/Scripts/activate` (Windows Git Bash) — or call `.venv/Scripts/python` directly.
 - Run tests: `.venv/Scripts/python -m pytest`
 - Install deps: `.venv/Scripts/python -m pip install -e ".[dev]"` (or install `pydantic` and `pytest` directly; tests use `pythonpath = src`).
-- Simulate a match: `PYTHONPATH=src .venv/Scripts/python -m beyond90.simulator --seed 42`
-  (public + private output in `data/generated/<match_id>/`, report in `reports/`).
+- Simulate a match: `PYTHONPATH=src .venv/Scripts/python -m beyond90.simulator --seed 42 [--review 30]`
+  (data in `data/generated/<match_id>/{public,private}/`; public report in `reports/public/`;
+  private evaluation record and intervention review in `reports/private/`, gitignored).
 
 ## Layout
 
@@ -17,10 +18,15 @@ src/beyond90/
   schemas/events.py        # PUBLIC observable event schema (versioned)
   schemas/match_setup.py   # PUBLIC rosters, line-ups, pitch orientation helpers
   schemas/validation.py    # PUBLIC football-rule stream validator (incremental, no look-ahead)
-  analytics/               # Live analysis (deterministic stats). Must never import ground_truth or simulator.
+  analytics/               # Live analysis (deterministic stats, possession, sequences). Public data only.
+  reporting/               # Public human-facing reports from public setup + events only.
+  live/                    # Live runtime file access: public/ files only (refuses private paths).
   ground_truth/            # HIDDEN: tactical scripts + applied record. Simulator + evaluation ONLY.
-  simulator/               # Seeded match engine; reads ground_truth; writes public/ and private/ separately.
+  simulator/               # Seeded match engine; reads ground_truth; writes public/ and private/ separately;
+                           # evaluation.py renders PRIVATE records.
 tests/
+docs/PROGRESS.md           # Stages, decisions, test results, limitations, next task. Update every stage.
+docs/REALISM_REVIEW.md     # Owner's football judgments. Never fill in assessments on the owner's behalf.
 ```
 
 ## Hard rules (non-negotiable)
@@ -36,7 +42,7 @@ tests/
 ## Schema conventions
 
 - Pydantic v2 models, `extra="forbid"`, `frozen=True`. Unknown fields are rejected — this also blocks hidden metadata leaking into events.
-- Every event carries `schema_version`. Breaking changes ⇒ bump the major version and add a new model; don't silently mutate v1.
+- Every event carries `schema_version`. Breaking changes ⇒ bump the major version and add a new model; don't silently mutate an existing version. (The v1→v2 in-place replacement happened before any consumer existed and is not a precedent.)
 - Coordinates: **fixed** metres on a 105 x 68 pitch. Ends swap at half-time; derive team-relative coordinates with `MatchSetup.to_attacking_frame` (never store them).
 - Time: `period` + `clock_ms` (ms since the period's kickoff). Ordering truth is `sequence`.
 - Public events hold observable facts only: no tactical intent, intervention labels, xG or difficulty scores. Computed metrics live in `analytics`, outside event records.
@@ -46,4 +52,6 @@ tests/
 
 - Prefer simple, tested code over cleverness; scope to what ships by the deadline.
 - Add a test with every schema or stats change. Run the full suite before committing.
+- Calibrate simulator behaviour through mechanisms with a football rationale, never by tuning counts to a target.
+- Update `docs/PROGRESS.md` at the end of each stage.
 - Don't commit secrets; Azure/Foundry config goes in `.env` (gitignored).

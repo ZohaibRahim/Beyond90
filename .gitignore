@@ -34,3 +34,6 @@ node_modules/
 Thumbs.db
 .vscode/
 .idea/
+
+# Private evaluation records (hidden ground truth). Regenerate with the simulator CLI.
+reports/private/

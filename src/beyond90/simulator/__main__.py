@@ -1,29 +1,43 @@
-"""Simulate one match: ``python -m beyond90.simulator --seed 42``."""
+"""Simulate one match: ``python -m beyond90.simulator --seed 42``.
+
+Writes public data + a public report, and SEPARATELY the private ground truth and
+private evaluation record. ``--review N`` also writes a private paired-control
+review of the intervention over seeds 0..N-1.
+"""
 
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 
+from beyond90.reporting import render_match_report
 from beyond90.simulator.engine import simulate_match
+from beyond90.simulator.evaluation import intervention_review, render_evaluation_record
 from beyond90.simulator.output import write_outputs
-from beyond90.simulator.report import render_report
 
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--out", type=Path, default=Path("data/generated"))
-    parser.add_argument("--report-dir", type=Path, default=Path("reports"))
+    parser.add_argument("--reports", type=Path, default=Path("reports"))
+    parser.add_argument("--review", type=int, default=0, help="number of seeds for the intervention review")
     args = parser.parse_args(argv)
 
     result = simulate_match(args.seed)
     paths = write_outputs(result, args.out)
-    args.report_dir.mkdir(parents=True, exist_ok=True)
-    report = args.report_dir / f"match_report_seed{args.seed}.md"
-    report.write_text(render_report(result), encoding="utf-8")
-    for name, path in {**paths, "report": report}.items():
-        print(f"{name:13s} {path}")
+    public_dir, private_dir = args.reports / "public", args.reports / "private"
+    public_dir.mkdir(parents=True, exist_ok=True)
+    private_dir.mkdir(parents=True, exist_ok=True)
+    paths["public_report"] = public_dir / f"match_report_seed{args.seed}.md"
+    paths["public_report"].write_text(render_match_report(result.setup, result.events), encoding="utf-8")
+    paths["private_record"] = private_dir / f"evaluation_seed{args.seed}.md"
+    paths["private_record"].write_text(render_evaluation_record(result), encoding="utf-8")
+    if args.review:
+        paths["private_review"] = private_dir / "intervention_review.md"
+        paths["private_review"].write_text(intervention_review(range(args.review)), encoding="utf-8")
+    for name, path in paths.items():
+        print(f"{name:15s} {path}")
 
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from beyond90.ground_truth import interventions
+from beyond90.reporting import render_match_report
 from beyond90.schemas import EVENT_MODELS
 from beyond90.simulator import simulate_match, write_outputs
 
@@ -14,7 +15,7 @@ SRC = Path(__file__).resolve().parents[1] / "src" / "beyond90"
 FORBIDDEN = ("beyond90.ground_truth", "beyond90.simulator")
 
 # Every live-side package. Add new ones here (agents, api, render, ...).
-GUARDED_PACKAGES = ["schemas", "analytics"]
+GUARDED_PACKAGES = ["schemas", "analytics", "reporting", "live"]
 
 
 def _imported_modules(path: Path) -> set[str]:
@@ -47,7 +48,7 @@ def test_live_side_never_imports_hidden_or_simulator(path):
 @pytest.mark.parametrize("path", _guarded_files(), ids=lambda p: str(p.relative_to(SRC)))
 def test_live_side_has_no_dynamic_imports(path):
     text = path.read_text(encoding="utf-8")
-    for needle in ("importlib", "__import__", *FORBIDDEN):
+    for needle in ("importlib", "__import__", "ground_truth.json", *FORBIDDEN):
         assert needle not in text, f"{path} mentions {needle}"
 
 
@@ -78,3 +79,22 @@ def test_public_output_reveals_no_tactical_settings(tmp_path):
     for line in paths["events"].read_text(encoding="utf-8").splitlines():
         assert set(json.loads(line)) <= allowed
     assert str(script.simulation_seed) not in result.setup.match_id
+
+
+HIDDEN_WORDS = ("intervention", "pressing", "intensity", "baseline", "tactic", "seed", "ground truth",
+                "ground_truth", "low block", "presses high", "press high", "hidden")
+
+
+def test_public_report_contains_no_hidden_information():
+    result = simulate_match(42)
+    report = render_match_report(result.setup, result.events).lower()
+    for word in HIDDEN_WORDS:
+        assert word not in report, word
+    for iv in result.ground_truth.script.interventions:
+        assert iv.intervention_id not in report
+
+
+def test_public_report_renderer_takes_only_public_inputs():
+    import inspect
+
+    assert list(inspect.signature(render_match_report).parameters) == ["setup", "events", "event_sample"]

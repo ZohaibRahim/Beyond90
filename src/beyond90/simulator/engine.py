@@ -67,6 +67,13 @@ INTERCEPT_SHARE = 0.15
 CROSS_CLEARED_FOR_CORNER = 0.3
 SHOT_SCALE = 0.55
 GK_RANGE_X = 18.0
+# Chance an outfield passer in their own half chooses to play back to the goalkeeper:
+# (unpressed, pressed) for defenders and midfielders. Recycling via the keeper is
+# a deliberate choice, more common deep and under pressure.
+BACK_PASS_PROB = {DF: (0.05, 0.20), MF: (0.015, 0.06)}
+BACK_PASS_MAX_X = 45.0
+# Keeper distribution: chance of going long (unpressed, pressed).
+KEEPER_LONG_PROB = (0.35, 0.75)
 
 # Who is involved, by zone of the ball in that player's own attacking frame.
 ZONE_WEIGHTS = (
@@ -252,6 +259,8 @@ class _Engine:
         opp = self.setup.opponent_id(team)
         x, y = self._att(team, *self.ball)
         ctx, self.context = self.context, None
+        if ctx is None and self.pos[self.carrier] is GK:
+            ctx = KEEPER  # keeper in possession distributes; never tackled or fouled here
         opp_press = self._pressing(opp)
         here = self._loc(team, x, y)
 
@@ -358,6 +367,12 @@ class _Engine:
                 self.ball, self.context = (here.x, here.y), REBOUND
                 self.clock += 1000
 
+    def _wants_back_pass(self, x: float, ctx: str | None, pressured: bool) -> bool:
+        probs = BACK_PASS_PROB.get(self.pos[self.carrier])
+        if ctx is not None or probs is None or x > BACK_PASS_MAX_X:
+            return False
+        return self.rng.random() < probs[pressured]
+
     def _pass_target(self, x: float, y: float, ctx: str | None, pressured: bool) -> tuple[float, float, float | None, bool]:
         """Return (end_x, end_y, fixed completion prob or None for the open-play model, is_cross)."""
         rng = self.rng
@@ -370,7 +385,7 @@ class _Engine:
         if ctx == RestartType.THROW_IN:
             return x + rng.gauss(3, 6), y + (1 if y < 34 else -1) * rng.uniform(5, 16), 0.86, False
         if ctx in (RestartType.GOAL_KICK, KEEPER):
-            if rng.random() < 0.5:
+            if rng.random() < KEEPER_LONG_PROB[pressured]:
                 return x + rng.uniform(35, 60), rng.uniform(10, 58), 0.5, False
             return x + rng.uniform(6, 18), y + rng.uniform(-15, 15), 0.93, False
         zone = _zone(x)
@@ -382,7 +397,12 @@ class _Engine:
     def _pass(self, team: str, opp: str, x: float, y: float, ctx: str | None,
               pressure: MatchEvent | None, opp_press: PressingIntensity) -> None:
         rng = self.rng
-        ex, ey, p_fixed, is_cross = self._pass_target(x, y, ctx, pressure is not None)
+        keeper = self.goalkeeper[team]
+        back_pass = self._wants_back_pass(x, ctx, pressure is not None)
+        if back_pass:
+            ex, ey, p_fixed, is_cross = rng.uniform(4, 12), 34 + rng.gauss(0, 7), 0.96, False
+        else:
+            ex, ey, p_fixed, is_cross = self._pass_target(x, y, ctx, pressure is not None)
         ex, ey = _clamp(ex, 1, 104), _clamp(ey, 1, 67)
         distance = math.hypot(ex - x, ey - y)
         if p_fixed is None:
@@ -417,7 +437,7 @@ class _Engine:
             return
 
         if rng.random() < p:
-            recipient = self._pick(team, ex, exclude=(self.carrier,))
+            recipient = keeper if back_pass else self._pick(team, ex, exclude=(self.carrier,), outfield=True)
             self._emit(PassEvent, **common, end_location=end, outcome=PassOutcome.COMPLETE, recipient_id=recipient)
             self.carrier = recipient
             self.clock += duration
