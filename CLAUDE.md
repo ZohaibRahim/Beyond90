@@ -55,6 +55,7 @@ docs/REALISM_REVIEW.md     # Owner's football judgments. Never fill in assessmen
 - Prefer simple, tested code over cleverness; scope to what ships by the deadline.
 - Add a test with every schema or stats change. Run the full suite before committing.
 - Calibrate simulator behaviour through mechanisms with a football rationale, never by tuning counts to a target.
+- `DEFAULT_CONFIG` is FROZEN (`recent8_z233`, owner decision 2026-10-21; see the frozen-configuration record in `docs/EVALUATION_PROTOCOL.md`). Do not change it; no further detector tuning is planned.
 - Detector thresholds are fixed in `DetectorConfig` before evaluation runs. Never tune them against hidden ground truth; justify changes from public data or prior reasoning, choose them on development seeds, and evaluate on held-out scenarios (Stage 3B).
 - Update `docs/PROGRESS.md` at the end of each stage.
 - Don't commit secrets; Azure/Foundry config goes in `.env` (gitignored).

@@ -147,3 +147,35 @@ Everything else is unchanged: ratio ≥ 1.5, both halves ≥ 1.2×, at least one
 These are reported whatever they show.
 
 **This is the last planned threshold experiment.** After it, one configuration is recommended to freeze. The held-out split is run only on the owner's instruction. Further threshold changes require a demonstrated correctness defect and a new amendment.
+
+### Frozen configuration record — 2026-10-21 (Stage 3B part 2)
+
+The owner approved Stage 3B part 1B and decided to freeze `recent8_z233`. Recorded before the held-out run.
+
+| Field | Value |
+|---|---|
+| Name | `recent8_z233` (now `beyond90.detection.DEFAULT_CONFIG`) |
+| Windows | recent 10 min, halves 5 min |
+| Minimum data | min_baseline_ms 20 min, min_baseline_buildup 40, min_recent_buildup 8, min_half_buildup 3 |
+| Primary test | z_primary 2.33, min_rate_ratio 1.5 |
+| Spike guard | min_half_ratio 1.2 |
+| Corroboration | z_support 1.64 (at least one of three signals) |
+| Persistence | 3 consecutive ticks |
+| Protocol version | Sections 1–8 + Amendment 1 + this record |
+| Selected on | Development split only; Amendment 1 rule, `docs/BENCHMARK_DEV_RESULTS_3B1B.md` (commit `8ef0d4a`) |
+| Code base at freeze | Parent commit `0578669`. The freeze commit itself is recorded in `docs/BENCHMARK_HOLDOUT_RESULTS.md`, which the harness writes from `git rev-parse` and runs only on a clean tree |
+
+**Selection rationale.**
+- **Development record:** 12/30 correct, 7 within 15 minutes, median delay 13.8 minutes, 0 early detections, 0 control false alarms and 0 treated non-target false alarms.
+- **Against z 2.00:** z 2.00 gained one detection (below the +2 needed) at the cost of one early alarm and one control false alarm.
+- **Against z 1.64:** z 1.64 was ineligible.
+- **Against Stage 3A:** `recent8_z233` loses no Stage 3A detection and adds no false alarm.
+
+**Held-out evaluation rules:**
+- Scoring is exactly section 4.
+- Opportunity bands are fixed from the development data (section 5).
+- Only this configuration is evaluated, once (`python -m beyond90.benchmark --split holdout --unlock-holdout`).
+- The harness refuses alternative configurations, a dirty tree, or a second run.
+- The configuration is not changed in response to held-out results.
+
+**Historical configurations stay pinned.** `STAGE_3A_CONFIG` and every development candidate are spelled out explicitly in `beyond90.benchmark.scoring`, so changing the defaults does not alter them. Re-running both development comparisons after the freeze reproduced every result line and both private per-match tables exactly. The only differences were the two format changes made in part 1B: the z_primary column and the thresholds note.

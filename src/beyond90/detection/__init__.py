@@ -2,6 +2,7 @@
 
 from beyond90.detection.detector import (
     DEFAULT_CONFIG,
+    STAGE_3A_CONFIG,
     Assessment,
     DetectionResult,
     DetectorConfig,
@@ -17,6 +18,7 @@ from beyond90.detection.metrics import RollingState, WindowMetrics
 
 __all__ = [
     "DEFAULT_CONFIG",
+    "STAGE_3A_CONFIG",
     "Assessment",
     "DetectionResult",
     "DetectorConfig",

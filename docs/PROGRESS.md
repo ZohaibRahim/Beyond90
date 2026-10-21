@@ -12,7 +12,8 @@ Last updated: 2026-10-20. Keep this file current at the end of every stage.
 | 2.6 Final checks | Stage 3A requested next (no explicit approval recorded) | `cf07bac` | Mutually exclusive time accounting; fix for pass receptions piling up on the goal line and touchlines; pattern-vs-cause rule |
 | 3A Detection | Approved, completed | `c112976` | As-of feed with release-time semantics; rolling 5/10-min pressing metrics; deterministic sustained-change detector with insufficient-evidence outcome; structured findings; reconciled time-table display |
 | 3B.1 Dev benchmark | Approved, completed | `e7a8588` | Correctness pass (full evidence, interval overlap, z caveats); pre-registered protocol (`a33e74f`); development benchmark of 5 minimum-data configs; holdout locked and not run |
-| 3B.1B Final dev comparison | Awaiting review | `8ef0d4a` | n/a display fix; protocol Amendment 1 (`6062b8e`); primary z 2.33 / 2.00 / 1.64 on recent8 gates; recommend freezing `recent8_z233`; holdout not run |
+| 3B.1B Final dev comparison | Approved, completed | `8ef0d4a` | n/a display fix; protocol Amendment 1 (`6062b8e`); primary z 2.33 / 2.00 / 1.64 on recent8 gates; recommend freezing `recent8_z233`; holdout not run |
+| 3B.2 Held-out evaluation | Freeze committed, held-out run pending | this commit | `recent8_z233` frozen as `DEFAULT_CONFIG`; historical configs pinned; harness evaluates only the frozen config on the holdout (one run, clean tree, commit recorded) |
 
 ## Stage 3B part 1B: final bounded development comparison
 

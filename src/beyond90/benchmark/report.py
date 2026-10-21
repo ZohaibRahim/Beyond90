@@ -7,6 +7,7 @@ and belongs in reports/private/.
 
 from __future__ import annotations
 
+import statistics
 from collections.abc import Sequence
 
 from beyond90.benchmark.scoring import (
@@ -98,6 +99,69 @@ def render_summary(split: str, summaries: Sequence[ConfigSummary], proposal: str
         out.append(f"{selection_text}, applied in order {', '.join(order)}: "
                    f"**`{proposal}`**. This is a proposal for approval; `DEFAULT_CONFIG` is unchanged and the "
                    "held-out split has not been run.")
+    out.append("")
+    return "\n".join(out)
+
+
+def _band_stats(scores, lo: float | None, hi: float | None) -> tuple[int, int, float | None]:
+    group = [p for p in scores if (lo is None or p.opportunity_per_10min >= lo)
+             and (hi is None or p.opportunity_per_10min < hi)]
+    delays = [p.delay_ms / MINUTE_MS for p in group if p.delay_ms is not None]
+    return sum(p.outcome == "correct" for p in group), len(group), (
+        statistics.median(delays) if delays else None)
+
+
+def render_holdout(dev: ConfigSummary, hold: ConfigSummary, cuts: tuple[float, float], commit: str,
+                   protocol: str) -> str:
+    """Final held-out report body: the frozen configuration on development and held-out seeds."""
+    lo, hi = cuts
+
+    def col(s: ConfigSummary) -> dict[str, str]:
+        d = s.delays_min
+        r = s.reason_pct()
+        return {
+            "Correct detections (recall, 95% Wilson CI)": _ci(s.correct, s.n),
+            "Correct within 15 minutes": f"{s.correct_within}/{s.n}",
+            "Missed": f"{s.count('miss')}/{s.n}",
+            "Early detections": f"{s.count('early')}/{s.n}",
+            "Median delay, correct detections (min)": _f(s.median_delay_min),
+            "Mean delay (min)": _f(sum(d) / len(d) if d else None),
+            "Delay range (min)": f"{_f(min(d) if d else None)}–{_f(max(d) if d else None)}",
+            "Control false alarms (per control match)": f"{s.control_fa} ({s.control_fa / s.n:.2f})",
+            "Control matches with ≥1 false alarm": _ci(s.control_matches_with_fa, s.n),
+            "Treated non-target false alarms": str(s.treated_fa),
+            "Insufficient evidence, all team-ticks": f"{s.insufficient_pct:.1f}%",
+            "Insufficient evidence, target team after switch": f"{s.target_post_insufficient_pct:.1f}%",
+            "…naming recent build-up shortfall": f"{r['recent_buildup']:.1f}%",
+            "…naming a 5-minute-half shortfall": f"{r['half_buildup']:.1f}%",
+            "…naming baseline shortfalls": f"{r['baseline_length'] + r['baseline_buildup']:.1f}%",
+        }
+
+    dc, hc = col(dev), col(hold)
+    c = hold.config
+    out = ["# Detector benchmark — final held-out evaluation", "",
+           f"Frozen configuration `{hold.name}`, evaluated once on the {hold.n} held-out seed pairs. Harness commit "
+           f"`{commit}`; protocol: {protocol}. Scoring rules: `docs/EVALUATION_PROTOCOL.md` section 4, unchanged.",
+           "", f"Configuration: min_baseline_ms {c.min_baseline_ms // MINUTE_MS} min, min_baseline_buildup "
+           f"{c.min_baseline_buildup}, min_recent_buildup {c.min_recent_buildup}, min_half_buildup "
+           f"{c.min_half_buildup}, z_primary {c.z_primary}, z_support {c.z_support}, min_rate_ratio "
+           f"{c.min_rate_ratio}, min_half_ratio {c.min_half_ratio}, persistence {c.persistence_ticks} ticks, "
+           f"windows {c.long_window_ms // MINUTE_MS}/{c.short_window_ms // MINUTE_MS} min.", "",
+           "## Results", "", f"| Measure | Development ({dev.n} pairs) | Held-out ({hold.n} pairs) |",
+           "|---|---|---|"]
+    out += [f"| {k} | {dc[k]} | {hc[k]} |" for k in dc]
+    out += ["", "Development figures: the same frozen configuration re-run on the development seeds in the same "
+            "invocation (must equal `recent8_z233` in `docs/BENCHMARK_DEV_RESULTS_3B1B.md`).", "",
+            "## Breakdown by opponent build-up opportunities", "",
+            "Opponent build-up passes per 10 minutes for the target team, switch to full time (public events). "
+            f"Band edges fixed from the development data (protocol section 5): low < {lo:.1f} ≤ middle < {hi:.1f} "
+            "≤ high.", "",
+            "| Band | Dev correct | Dev median delay | Held-out correct | Held-out median delay |",
+            "|---|---:|---:|---:|---:|"]
+    for label, band in (("low", (None, lo)), ("middle", (lo, hi)), ("high", (hi, None))):
+        dk, dn, dm = _band_stats(dev.scores, *band)
+        hk, hn, hm = _band_stats(hold.scores, *band)
+        out.append(f"| {label} | {dk}/{dn} | {_f(dm)} | {hk}/{hn} | {_f(hm)} |")
     out.append("")
     return "\n".join(out)
 

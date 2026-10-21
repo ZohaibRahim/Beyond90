@@ -19,7 +19,7 @@ from beyond90.benchmark.scoring import (
     wilson,
 )
 from beyond90.benchmark.splits import _draw
-from beyond90.detection import DEFAULT_CONFIG
+from beyond90.detection import DEFAULT_CONFIG, STAGE_3A_CONFIG
 
 MIN = 60_000
 
@@ -40,13 +40,13 @@ def test_holdout_is_locked_by_default():
 
 
 def test_candidates_vary_only_minimum_data_thresholds():
-    assert CANDIDATES["original"] == DEFAULT_CONFIG
+    assert CANDIDATES["original"] == STAGE_3A_CONFIG
     assert set(CONSERVATIVE_ORDER) == set(CANDIDATES)
     data_fields = {"min_baseline_ms", "min_baseline_buildup", "min_recent_buildup", "min_half_buildup"}
     for cfg in CANDIDATES.values():
         for name, value in vars(cfg).items():
             if name not in data_fields:
-                assert value == getattr(DEFAULT_CONFIG, name), name
+                assert value == getattr(STAGE_3A_CONFIG, name), name
 
 
 def test_wilson_interval():
@@ -55,7 +55,7 @@ def test_wilson_interval():
 
 
 def test_score_pair_on_seed_42_matches_stage_3a_run():
-    s = score_pair(42, DEFAULT_CONFIG)
+    s = score_pair(42, STAGE_3A_CONFIG)
     treated, _ = simulate_pair(42)
     assert s.switch_ms == switch_elapsed_ms(treated)
     assert s.outcome == "correct" and s.control_false_alarms == 0 and s.treated_false_alarms == 0
@@ -103,7 +103,7 @@ def test_1b_candidates_vary_only_primary_z_on_recent8_gates():
     import dataclasses
 
     base = CANDIDATES["recent8"]
-    assert CANDIDATES_1B["original"] == DEFAULT_CONFIG
+    assert CANDIDATES_1B["original"] == STAGE_3A_CONFIG
     assert CANDIDATES_1B["recent8_z233"] == base
     assert [CANDIDATES_1B[n].z_primary for n in ORDER_1B] == [2.33, 2.00, 1.64]
     for n in ORDER_1B:
@@ -137,3 +137,35 @@ def test_worsening_counts_per_seed_changes():
     new.scores[0].control_false_alarms = 2
     w = worsening(new, ref)
     assert (w.kept, w.gained, w.lost, w.later, w.extra_control_fa) == (2, 1, 1, 1, 2)
+
+
+# -- Stage 3B part 2: freeze and held-out guards (the holdout itself is never run in tests) ----
+
+def test_frozen_default_config_is_the_owner_approved_configuration():
+    from beyond90.benchmark.scoring import FROZEN
+
+    c = DEFAULT_CONFIG
+    assert (c.min_baseline_ms, c.min_baseline_buildup, c.min_recent_buildup, c.min_half_buildup, c.z_primary) == \
+        (20 * MIN, 40, 8, 3, 2.33)
+    assert (c.long_window_ms, c.short_window_ms, c.min_rate_ratio, c.min_half_ratio, c.z_support,
+            c.persistence_ticks) == (10 * MIN, 5 * MIN, 1.5, 1.2, 1.64, 3)
+    assert c == CANDIDATES_1B["recent8_z233"] == CANDIDATES["recent8"]
+    assert FROZEN == {"recent8_z233": DEFAULT_CONFIG}
+    assert (STAGE_3A_CONFIG.min_recent_buildup, STAGE_3A_CONFIG.min_half_buildup) == (15, 6)
+
+
+def test_holdout_preflight_guards(tmp_path):
+    from beyond90.benchmark.__main__ import holdout_preflight
+
+    out = tmp_path / "holdout.md"
+    clean = lambda *a: "" if a[0] == "status" else "abc1234"  # noqa: E731
+    with pytest.raises(HoldoutLockedError):
+        holdout_preflight(False, None, out, git=clean)
+    with pytest.raises(SystemExit, match="frozen configuration"):
+        holdout_preflight(True, "3b1b", out, git=clean)
+    with pytest.raises(SystemExit, match="commit all changes"):
+        holdout_preflight(True, None, out, git=lambda *a: " M file.py" if a[0] == "status" else "x")
+    assert holdout_preflight(True, None, out, git=clean) == "abc1234"
+    out.write_text("done")
+    with pytest.raises(SystemExit, match="only once"):
+        holdout_preflight(True, None, out, git=clean)

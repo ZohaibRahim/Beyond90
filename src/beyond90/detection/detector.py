@@ -5,13 +5,13 @@ the detector compares the last 10 minutes with that team's own earlier baseline
 (kickoff up to the start of the recent window), using only events released by the
 tick (see ``beyond90.live.feed``).
 
-Decision rule (all thresholds fixed in ``DetectorConfig`` before any evaluation
-run, from statistical conventions and football reasoning, NOT tuned against
-hidden ground truth):
+Decision rule. ``DEFAULT_CONFIG`` is the FROZEN configuration approved by the owner
+after the pre-registered development comparisons (docs/EVALUATION_PROTOCOL.md,
+"Frozen configuration record"); never tune it against hidden ground truth.
 
 1. Enough data: baseline >= 20 min and >= 40 opposition build-up passes; recent
-   window >= 15 build-up passes, and >= 6 in each 5-minute half. Otherwise
-   INSUFFICIENT_EVIDENCE.
+   window >= 8 build-up passes, and >= 3 in each 5-minute half. Otherwise
+   INSUFFICIENT_EVIDENCE. (Stage 3A used 15 and 6: ``STAGE_3A_CONFIG``.)
 2. Primary signal: high pressures per opposition build-up pass, recent vs baseline,
    conditional binomial rate test |z| >= 2.33 (one-sided 1%) AND a rate ratio of
    at least 1.5 (or at most 1/1.5 for a decrease).
@@ -63,8 +63,8 @@ class DetectorConfig:
     short_window_ms: int = 5 * MINUTE_MS
     min_baseline_ms: int = 20 * MINUTE_MS
     min_baseline_buildup: int = 40
-    min_recent_buildup: int = 15
-    min_half_buildup: int = 6
+    min_recent_buildup: int = 8
+    min_half_buildup: int = 3
     z_primary: float = 2.33
     min_rate_ratio: float = 1.5
     min_half_ratio: float = 1.2
@@ -72,7 +72,10 @@ class DetectorConfig:
     persistence_ticks: int = 3
 
 
+# Frozen 2026-10-21 (owner decision after Stage 3B part 1B; "recent8_z233").
 DEFAULT_CONFIG = DetectorConfig()
+# The Stage 3A configuration, kept for reproducing earlier development results.
+STAGE_3A_CONFIG = DetectorConfig(min_recent_buildup=15, min_half_buildup=6)
 
 
 class EvidenceStatus(StrEnum):

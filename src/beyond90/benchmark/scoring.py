@@ -9,7 +9,15 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from functools import cache
 
-from beyond90.detection import DetectorConfig, Direction, EvidenceStatus, RollingState, detect
+from beyond90.detection import (
+    DEFAULT_CONFIG,
+    STAGE_3A_CONFIG,
+    DetectorConfig,
+    Direction,
+    EvidenceStatus,
+    RollingState,
+    detect,
+)
 from beyond90.detection.detector import DetectionResult
 from beyond90.schemas import MatchEvent, MatchSetup, PeriodEndEvent
 from beyond90.simulator import SimulationResult, control_script, simulate_match
@@ -18,7 +26,8 @@ MINUTE_MS = 60_000
 WITHIN_MS = 15 * MINUTE_MS
 
 CANDIDATES: dict[str, DetectorConfig] = {
-    "original": DetectorConfig(),
+    # Historical candidates: every gate explicit, so later default changes cannot alter them.
+    "original": STAGE_3A_CONFIG,
     "recent12": DetectorConfig(min_recent_buildup=12, min_half_buildup=5),
     "recent10": DetectorConfig(min_recent_buildup=10, min_half_buildup=4),
     "recent10_base30": DetectorConfig(min_recent_buildup=10, min_half_buildup=4,
@@ -31,13 +40,17 @@ CONSERVATIVE_ORDER = ("original", "recent12", "recent10", "recent10_base30", "re
 # Amendment 1 (protocol, 2026-10-21): final bounded comparison of the primary z threshold.
 _RECENT8 = dict(min_recent_buildup=8, min_half_buildup=3)
 CANDIDATES_1B: dict[str, DetectorConfig] = {
-    "original": DetectorConfig(),  # reference only, not selectable
+    "original": STAGE_3A_CONFIG,  # reference only, not selectable
     "recent8_z233": DetectorConfig(**_RECENT8, z_primary=2.33),
     "recent8_z200": DetectorConfig(**_RECENT8, z_primary=2.00),
     "recent8_z164": DetectorConfig(**_RECENT8, z_primary=1.64),
 }
 ORDER_1B = ("recent8_z233", "recent8_z200", "recent8_z164")
 FALLBACK_1B = "recent8_z233"
+
+# Stage 3B part 2: the single frozen configuration evaluated on the held-out split.
+FROZEN_NAME = "recent8_z233"
+FROZEN: dict[str, DetectorConfig] = {FROZEN_NAME: DEFAULT_CONFIG}
 MAX_CONTROL_FA_PER_MATCH = 0.10
 MAX_EARLY = 1
 MIN_EXTRA_CORRECT = 2
