@@ -9,7 +9,46 @@ Last updated: 2026-10-20. Keep this file current at the end of every stage.
 | 1. Scaffold + schemas | Approved | `0cf2018` | Repo, pytest, CLAUDE.md, event schema v1, hidden intervention schema, isolation test |
 | 2. First simulator | Provisionally approved | `4c4bd3c` | Event schema v2, roster/lineup schema, football-rule validator, seeded engine with hidden pressing switch, public/private output |
 | 2.5 Corrections | Conditionally approved | `71f1695` | Goalkeeper back-pass mechanism, time-based possession, possession sequences, public/private report split, live public-only file access, paired-control intervention review |
-| 2.6 Final checks | Awaiting review | `cf07bac` | Mutually exclusive time accounting; fix for pass receptions piling up on the goal line and touchlines; pattern-vs-cause rule |
+| 2.6 Final checks | Stage 3A requested next (no explicit approval recorded) | `cf07bac` | Mutually exclusive time accounting; fix for pass receptions piling up on the goal line and touchlines; pattern-vs-cause rule |
+| 3A Detection | Awaiting review | this commit | As-of feed with release-time semantics; rolling 5/10-min pressing metrics; deterministic sustained-change detector with insufficient-evidence outcome; structured findings; reconciled time-table display |
+
+## Stage 3A: deterministic pressing-change detection
+
+**Observability (`beyond90.live.feed`).** Event timestamps mark when an action started. Release rules:
+- A **pass** is released when the next event starts. Its outcome, end location and recipient are not known before; a pass with no following event is never released.
+- A **pressure** is released at `clock_ms + duration_ms`.
+- **Everything else** is released at its own timestamp.
+- **Order:** releases are monotone in sequence order, so the visible set at time T is a prefix of the stream and contains only events that started by T.
+
+No schema change.
+
+**Rolling metrics (`beyond90.detection.metrics`).** 5- and 10-minute windows (and baseline) per team, treating that team as the potential presser:
+- attacking-third pressures (x ≥ 70 in the presser's frame);
+- high regains;
+- opposition build-up passes (from x < 35 in the opposition's own frame) and their completion;
+- opposition long-pass share (≥ 30 m);
+- opposition keeper passes and long share (≥ 35 m);
+- opposition controlled possession minutes.
+
+Pressures are normalised per opposition build-up pass (primary) and per opposition controlled minute (reported). Rates below minimum denominators are `None`.
+
+**Detector (`beyond90.detection.detector`).** Evaluated every whole minute against the team's own earlier baseline. Thresholds were fixed before any run and not tuned:
+- **Data:** baseline ≥ 20 min with ≥ 40 opposition build-up passes; recent ≥ 15, with ≥ 6 in each 5-min half. Otherwise `insufficient_evidence`.
+- **Primary:** high pressures per build-up pass, conditional binomial |z| ≥ 2.33 and ratio ≥ 1.5 (or ≤ 1/1.5).
+- **Not a spike:** both 5-minute halves move in the same direction by ≥ 1.2×.
+- **Corroboration:** ≥ 1 of high regains, opposition defensive-third completion (opposite direction) or opposition long-pass share, with z ≥ 1.64.
+- **Persistence:** 3 consecutive ticks → `sustained_change`; otherwise `candidate` or `no_change`.
+
+Findings carry team, direction, detection time, evidence window, metrics, supporting public event ids (high pressures and high regains in the window), and an association-only statement.
+
+**Seed 42 results** (`reports/public/detection_seed42.md`, `..._control.md`). Thresholds unchanged after viewing:
+- **Scripted match:** one finding, Kestrel Bay pressing increase at 74' (P2 29:00). Primary z = 3.41, ratio 4.91; corroborated by NBH defensive-third completion (85% → 65%, z = −1.92).
+- **Ground truth** (read only afterwards, for this report): the switch first affected events at 59.6', so the delay was 14.4 min. Most of it was `insufficient_evidence`: NBH made fewer than 15 build-up passes per 10 minutes for much of 60'–71'.
+- **Paired control:** no findings, so no false alarm in this pair.
+- **Spike rejection:** a 51' candidate (ratio 6.0) appears identically in both runs, before the switch. It stayed a candidate, which is the intended spike rejection.
+- **Coverage gap:** Kestrel Bay is `insufficient_evidence` for all of period 1 in both runs.
+
+**Time table rounding.** Rows were truncated to whole seconds independently (30:14 + 26:19 + 5:46 + 34:06 = 96:25 ≠ 96:27). Displayed seconds and tenths of a percent now use largest-remainder rounding to the displayed total. Underlying milliseconds are unchanged.
 
 ## Stage 2.6 findings
 
@@ -53,7 +92,14 @@ The artifact had inflated scoring by creating point-blank positions. Goals per m
 
 ## Test results
 
-- Stage 2.6: **262 passed** (`.venv/Scripts/python -m pytest`, about 4 s).
+- Stage 3A: **302 passed** (`.venv/Scripts/python -m pytest`, about 8 s). New tests cover:
+  - the as-of feed and the rolling metrics;
+  - detector logic with scripted windows (persistence, spike, uncorroborated, sparse, too early, decrease);
+  - cutoff equals event-prefix analysis, a different future changes nothing, and the hidden script has no influence before the switch;
+  - supporting ids are released before detection, and finding wording is association-only;
+  - time-table reconciliation.
+- Leak probe: a planted simulator import in `detection` was caught.
+- Stage 2.6: 262 passed.
 - The spatial-concentration regression test was run against the pre-fix engine and failed as expected (7.0% of receptions at x ≥ 98).
 - Leak probes: planted imports of hidden modules in `analytics` (Stage 2) and `reporting` (Stage 2.5) were caught by the isolation tests, then removed.
 
@@ -112,6 +158,13 @@ Measurement limitations:
 
 Outstanding realism questions are listed in `docs/REALISM_REVIEW.md` for the user's review.
 
+Detection limitations (Stage 3A):
+
+- Evaluated on one scripted/control pair only; no accuracy or false-alarm rate is claimed yet.
+- Fixed minimum denominators leave long `insufficient_evidence` stretches when the opponent builds up rarely (KES all of period 1 in seed 42).
+- One finding per team per direction, with no re-baselining after a detection. Ticks every whole minute. The baseline is the whole earlier match, so an earlier change would dilute it.
+- Multiple comparisons (about 70 ticks × 2 teams × 2 directions) are not corrected beyond persistence and corroboration.
+
 ## Next task
 
-Stage 3 (approved next, not started): deterministic tactical change detection and evaluation using public events only, scored against private ground truth (detection accuracy, false alarms, detection delay). Detectors may read only through `beyond90.live`, and must report pattern changes, never causes of individual goals.
+Stage 3B: evaluate the detector systematically on separate development and held-out scenario sets: detection accuracy, false alarms on controls, detection delay, explanation reliability. Choose any threshold changes on development seeds only, with stated reasons, then report held-out results once.

@@ -15,13 +15,13 @@ Every interval between consecutive events belongs to exactly one category, so th
 
 | Category | Time | Share of elapsed |
 |---|---:|---:|
-| Controlled by Northbridge Harriers | 30:14 | 31.4% |
+| Controlled by Northbridge Harriers | 30:14 | 31.3% |
 | Controlled by Kestrel Bay | 26:19 | 27.3% |
-| Contested in play (incomplete pass in flight, loose ball, turnover not yet completed) | 5:46 | 6.0% |
-| Stoppages (ball out of play, fouls, offsides, goals, substitutions) | 34:06 | 35.4% |
+| Contested in play (incomplete pass in flight, loose ball, turnover not yet completed) | 5:47 | 6.0% |
+| Stoppages (ball out of play, fouls, offsides, goals, substitutions) | 34:07 | 35.4% |
 | **Elapsed match time** | **96:27** | 100.0% |
 
-Ball in play = controlled + contested = 62:20.
+Ball in play = controlled + contested = 62:20. Rows are rounded to the second so that they add up to the total shown.
 
 Possession is a time-based estimate: each team's share of *controlled* time. Contested time and stoppages are excluded. A completed pass in flight counts for the passer. When a loose ball is followed by a restart, the moment it left play is not observed, so that whole interval counts as a stoppage. Pass share is shown separately and is not a possession measure.
 

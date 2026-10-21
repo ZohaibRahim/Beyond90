@@ -13,8 +13,9 @@ from pathlib import Path
 from beyond90.simulator.engine import SimulationResult
 
 
-def write_outputs(result: SimulationResult, out_dir: Path) -> dict[str, Path]:
-    root = Path(out_dir) / result.setup.match_id
+def write_outputs(result: SimulationResult, out_dir: Path, name: str | None = None) -> dict[str, Path]:
+    """``name`` overrides the directory name (default: the match id), e.g. for a paired control."""
+    root = Path(out_dir) / (name or result.setup.match_id)
     public, private = root / "public", root / "private"
     public.mkdir(parents=True, exist_ok=True)
     private.mkdir(parents=True, exist_ok=True)

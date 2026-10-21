@@ -76,7 +76,8 @@ class PossessionSummary:
         return self.controlled_ms[team_id] / held if held else None
 
 
-def _categorize(team: str | None, ball: BallState, next_event: MatchEvent) -> TimeCategory:
+def categorize_interval(ball: BallState, next_event: MatchEvent) -> TimeCategory:
+    """Category of the interval that starts in ball state ``ball`` and ends at ``next_event``."""
     if ball is BallState.IN_PLAY:
         return TimeCategory.CONTROLLED
     if ball is BallState.DEAD:
@@ -94,7 +95,7 @@ def possession_intervals(setup: MatchSetup, events: Iterable[MatchEvent]) -> lis
     for e in events:
         if prev is not None and prev_state is not None and prev.period == e.period:
             team, ball = prev_state
-            category = _categorize(team, ball, e)
+            category = categorize_interval(ball, e)
             intervals.append(PossessionInterval(prev, e.clock_ms - prev.clock_ms, category,
                                                 team if category is TimeCategory.CONTROLLED else None))
         tracker.apply(e)

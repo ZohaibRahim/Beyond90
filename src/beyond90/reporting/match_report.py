@@ -57,6 +57,22 @@ def _mmss(ms: int) -> str:
     return f"{ms // 60_000}:{ms // 1000 % 60:02d}"
 
 
+def apportion(values: Sequence[int], total_units: int) -> list[int]:
+    """Largest-remainder rounding: integer parts proportional to ``values`` that sum to ``total_units``.
+
+    Used only for display, so rounded rows add up to the rounded total.
+    """
+    whole = sum(values)
+    if whole == 0:
+        return [0] * len(values)
+    exact = [v * total_units / whole for v in values]
+    parts = [int(x) for x in exact]
+    by_remainder = sorted(range(len(values)), key=lambda i: (-(exact[i] - parts[i]), i))
+    for i in by_remainder[: total_units - sum(parts)]:
+        parts[i] += 1
+    return parts
+
+
 def shape_from_positions(team: TeamSheet) -> str:
     counts = Counter(team.player(p).position for p in team.starting_xi)
     return f"{counts[Position.DEFENDER]}-{counts[Position.MIDFIELDER]}-{counts[Position.FORWARD]}"
@@ -151,10 +167,14 @@ def render_match_report(setup: MatchSetup, events: Sequence[MatchEvent], event_s
     rows += [("Contested in play (incomplete pass in flight, loose ball, turnover not yet completed)",
               poss.contested_ms),
              ("Stoppages (ball out of play, fouls, offsides, goals, substitutions)", poss.stoppage_ms)]
-    out += [f"| {label} | {_mmss(ms)} | {_pct(ms / elapsed)} |" for label, ms in rows]
-    out += [f"| **Elapsed match time** | **{_mmss(elapsed)}** | 100.0% |",
+    total_s = round(elapsed / 1000)
+    secs = apportion([ms for _, ms in rows], total_s)
+    tenths = apportion([ms for _, ms in rows], 1000)
+    out += [f"| {label} | {_mmss(sec * 1000)} | {t / 10:.1f}% |" for (label, _), sec, t in zip(rows, secs, tenths)]
+    out += [f"| **Elapsed match time** | **{_mmss(total_s * 1000)}** | 100.0% |",
             "",
-            f"Ball in play = controlled + contested = {_mmss(poss.ball_in_play_ms)}.",
+            f"Ball in play = controlled + contested = {_mmss(sum(secs[:3]) * 1000)}. Rows are rounded to the "
+            "second so that they add up to the total shown.",
             "",
             "Possession is a time-based estimate: each team's share of *controlled* time. Contested time and "
             "stoppages are excluded. A completed pass in flight counts for the passer. When a loose ball is "

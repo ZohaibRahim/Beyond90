@@ -15,7 +15,7 @@ SRC = Path(__file__).resolve().parents[1] / "src" / "beyond90"
 FORBIDDEN = ("beyond90.ground_truth", "beyond90.simulator")
 
 # Every live-side package. Add new ones here (agents, api, render, ...).
-GUARDED_PACKAGES = ["schemas", "analytics", "reporting", "live"]
+GUARDED_PACKAGES = ["schemas", "analytics", "reporting", "live", "detection"]
 
 
 def _imported_modules(path: Path) -> set[str]:
