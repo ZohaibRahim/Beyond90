@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Tests (${{ matrix.os }}, Python ${{ matrix.python-version }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+
+      - name: Run test suite
+        run: python -m pytest
+
+  smoke:
+    name: Simulate and detect (seed 42)
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+
+      - name: Simulate seed 42 with its paired control
+        run: python -m beyond90.simulator --seed 42 --control --out "$RUNNER_TEMP/generated" --reports "$RUNNER_TEMP/reports"
+
+      - name: Run the detector on public data only
+        run: |
+          match_dir=$(find "$RUNNER_TEMP/generated" -mindepth 1 -maxdepth 1 -type d ! -name '*-control' | head -n 1)
+          python -m beyond90.detection "$match_dir" \
+            --out "$RUNNER_TEMP/reports/public/detection.md" \
+            --evidence "$RUNNER_TEMP/reports/public/evidence.json"
+          python -m beyond90.detection "$match_dir-control" --out "$RUNNER_TEMP/reports/public/detection_control.md"
+
+      - name: Held-out split stays locked
+        run: |
+          if python -m beyond90.benchmark --split holdout; then
+            echo "::error::the held-out split ran without --unlock-holdout"
+            exit 1
+          fi
+
+      - name: Public reports must not mention hidden intervention metadata
+        run: |
+          if grep -riE "iv-1|ground_truth|intervention" "$RUNNER_TEMP/reports/public"; then
+            echo "::error::hidden metadata found in public reports"
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: seed42-public-reports
+          path: ${{ runner.temp }}/reports/public/
