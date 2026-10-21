@@ -1,0 +1,18 @@
+[project]
+name = "beyond90"
+version = "0.1.0"
+description = "Beyond90 AI: football intelligence that proves its insights (synthetic match data)."
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.9,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra --strict-markers"
