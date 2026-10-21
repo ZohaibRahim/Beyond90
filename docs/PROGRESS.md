@@ -13,7 +13,41 @@ Last updated: 2026-10-20. Keep this file current at the end of every stage.
 | 3A Detection | Approved, completed | `c112976` | As-of feed with release-time semantics; rolling 5/10-min pressing metrics; deterministic sustained-change detector with insufficient-evidence outcome; structured findings; reconciled time-table display |
 | 3B.1 Dev benchmark | Approved, completed | `e7a8588` | Correctness pass (full evidence, interval overlap, z caveats); pre-registered protocol (`a33e74f`); development benchmark of 5 minimum-data configs; holdout locked and not run |
 | 3B.1B Final dev comparison | Approved, completed | `8ef0d4a` | n/a display fix; protocol Amendment 1 (`6062b8e`); primary z 2.33 / 2.00 / 1.64 on recent8 gates; recommend freezing `recent8_z233`; holdout not run |
-| 3B.2 Held-out evaluation | Freeze committed, held-out run pending | this commit | `recent8_z233` frozen as `DEFAULT_CONFIG`; historical configs pinned; harness evaluates only the frozen config on the holdout (one run, clean tree, commit recorded) |
+| 3B.2 Held-out evaluation | Awaiting review | freeze `762db64`; results this commit | `recent8_z233` frozen as `DEFAULT_CONFIG`; held-out split run once on `762db64`: recall 8/30, 4 control false alarms; detector unchanged |
+
+## Stage 3B part 2: freeze and final held-out evaluation
+
+**Freeze** (commit `762db64`, made before the held-out run):
+- `DEFAULT_CONFIG` is set to the owner-approved `recent8_z233`: min_baseline 20 min / 40, min_recent 8, min_half 3, z_primary 2.33; everything else at Stage 3A values.
+- `STAGE_3A_CONFIG` and all development candidates are pinned explicitly.
+- The frozen-configuration record (config, rationale, protocol version, parent commit) is appended to the protocol.
+- The holdout CLI evaluates only the frozen configuration. It needs `--unlock-holdout` and a clean tree, records the commit, and refuses alternatives and a second run.
+- Both development comparisons re-ran identically after the freeze. The seed-42 finding is unchanged (KES at 74').
+
+**Held-out run** (once, on `762db64`; `docs/BENCHMARK_HOLDOUT_RESULTS.md`; per-match hidden details in gitignored `reports/private/`):
+
+| | Development | Held-out |
+|---|---|---|
+| Correct (recall, 95% CI) | 12/30 (40%, 25–58%) | **8/30 (27%, 14–44%)** |
+| Within 15 min | 7 | 2 |
+| Missed / early | 18 / 0 | 20 / 2 |
+| Median / mean delay | 13.8 / 14.9 min | 22.8 / 23.0 min |
+| Control false alarms | 0 (0.00/match) | **4 (0.13/match)**, above the 0.10 development limit |
+| Treated non-target false alarms | 0 | 0 |
+| Insufficient evidence (all ticks / target after switch) | 51.0% / 23.7% | 51.1% / 20.5% |
+| By opportunity band (low / middle / high, dev edges) | 2/10, 3/10, 7/10 | 2/10, 5/15, 1/5 |
+
+- **Worse than development.** Performance fell on held-out data, as selection optimism predicts.
+- **Not changed in response.** The detector, configuration, simulator, scenarios, split and scoring are untouched since the freeze.
+- **Demonstrated:**
+  - a leakage-tested public-data pipeline with auditable evidence and an honest locked evaluation;
+  - findings in treated matches always named the right team and direction.
+- **Not demonstrated:**
+  - usable live detection (low recall, late);
+  - single-finding reliability;
+  - generalisation beyond the one scenario type;
+  - any real-football validity;
+  - calibrated probabilities.
 
 ## Stage 3B part 1B: final bounded development comparison
 
@@ -149,6 +183,7 @@ The artifact had inflated scoring by creating point-blank positions. Goals per m
 
 ## Test results
 
+- Stage 3B part 2: **333 passed** (about 6 s) (`.venv/Scripts/python -m pytest`). New tests: frozen `DEFAULT_CONFIG` pinned to the approved values (and equal to the development candidates); holdout preflight guards (locked, no alternatives, clean tree, single run). The held-out split is never run by tests.
 - Stage 3B part 1B: **331 passed** (about 6 s) (`.venv/Scripts/python -m pytest`). New tests: low-data detection displays its evidence (no n/a); assessed ticks always show primary rates (3 configs × 2 seeds × treated/control); tick-by-tick feed boundary; Amendment 1 candidate set, selection rule with tie-breakers, per-seed worsening.
 - Stage 3B part 1: **318 passed** (about 7 s) (`.venv/Scripts/python -m pytest`). New tests:
   - interval-overlap boundaries and brute-force controlled time;
@@ -233,6 +268,4 @@ Detection limitations (Stage 3A):
 
 ## Next task
 
-Awaiting the owner's approval to freeze `recent8_z233`. Once frozen, and only on the owner's instruction, run the locked held-out split once with that configuration and report the results as they come out. Not started: AI agents, frontend, Azure.
-
-The holdout harness currently compares the part 1 candidate set. Before the holdout run it must be pointed at the single frozen configuration. That is a small harness change, to be made and reviewed alongside the freeze.
+The detector is frozen and evaluated; no further tuning. Next priority, after owner review: a Microsoft Foundry-powered AI explanation pipeline grounded in detector findings, `finding_evidence` and deterministic statistics, with honest "insufficient evidence" and "no sustained change" answers and the held-out error rates disclosed. Then frontend, then Azure deployment. Not started.
