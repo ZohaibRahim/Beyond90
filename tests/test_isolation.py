@@ -1,15 +1,17 @@
 """Enforce the information barrier between hidden ground truth and live analysis."""
 
 import ast
+import json
 from pathlib import Path
 
 import pytest
 
 from beyond90.ground_truth import interventions
-from beyond90.schemas import events
+from beyond90.schemas import EVENT_MODELS
+from beyond90.simulator import simulate_match, write_outputs
 
 SRC = Path(__file__).resolve().parents[1] / "src" / "beyond90"
-HIDDEN = "beyond90.ground_truth"
+FORBIDDEN = ("beyond90.ground_truth", "beyond90.simulator")
 
 # Every live-side package. Add new ones here (agents, api, render, ...).
 GUARDED_PACKAGES = ["schemas", "analytics"]
@@ -22,6 +24,7 @@ def _imported_modules(path: Path) -> set[str]:
             names.update(alias.name for alias in node.names)
         elif isinstance(node, ast.ImportFrom) and node.module:
             names.add(node.module)
+            # `from beyond90 import ground_truth` is recorded as "beyond90.ground_truth" too.
             names.update(f"{node.module}.{alias.name}" for alias in node.names)
     return names
 
@@ -36,24 +39,42 @@ def test_guarded_packages_exist():
 
 
 @pytest.mark.parametrize("path", _guarded_files(), ids=lambda p: str(p.relative_to(SRC)))
-def test_live_side_never_imports_ground_truth(path):
-    # `from beyond90 import ground_truth` is recorded as "beyond90.ground_truth" too.
-    leaks = {m for m in _imported_modules(path) if m == HIDDEN or m.startswith(HIDDEN + ".")}
-    assert not leaks, f"{path} imports hidden ground truth: {leaks}"
+def test_live_side_never_imports_hidden_or_simulator(path):
+    leaks = {m for m in _imported_modules(path) for bad in FORBIDDEN if m == bad or m.startswith(bad + ".")}
+    assert not leaks, f"{path} imports hidden modules: {leaks}"
 
 
-def test_live_side_has_no_dynamic_import_of_ground_truth():
-    for path in _guarded_files():
-        assert "ground_truth" not in path.read_text(encoding="utf-8"), path
+@pytest.mark.parametrize("path", _guarded_files(), ids=lambda p: str(p.relative_to(SRC)))
+def test_live_side_has_no_dynamic_imports(path):
+    text = path.read_text(encoding="utf-8")
+    for needle in ("importlib", "__import__", *FORBIDDEN):
+        assert needle not in text, f"{path} mentions {needle}"
 
 
 def test_hidden_schema_does_not_depend_on_public_schema():
-    assert "beyond90.schemas" not in _imported_modules(Path(interventions.__file__))
+    assert not any(m.startswith("beyond90.schemas") for m in _imported_modules(Path(interventions.__file__)))
 
 
-def test_event_schema_has_no_intervention_fields():
-    forbidden = {"intervention", "instruction", "tactic", "seed", "ground_truth"}
-    for model in [events.PassEvent, events.ShotEvent, events.TackleEvent, events.PressureEvent,
-                  events.InterceptionEvent, events.PossessionChangeEvent, events.SubstitutionEvent]:
+def test_event_schema_has_no_hidden_or_computed_fields():
+    forbidden = {"intervention", "instruction", "tactic", "press_", "intensity", "seed", "ground_truth",
+                 "xg", "difficulty", "intent", "probability"}
+    for model in EVENT_MODELS:
         for field in model.model_fields:
             assert not any(word in field for word in forbidden), (model.__name__, field)
+
+
+def test_public_output_reveals_no_tactical_settings(tmp_path):
+    result = simulate_match(11)
+    paths = write_outputs(result, tmp_path)
+    public_text = paths["setup"].read_text(encoding="utf-8") + paths["events"].read_text(encoding="utf-8")
+    script = result.ground_truth.script
+    hidden_tokens = {"intervention", "pressing", "intensity", "baseline", "tactic", "seed", "note",
+                     *(i.intervention_id for i in script.interventions)}
+    lowered = public_text.lower()
+    for token in hidden_tokens:
+        assert token not in lowered, token
+    # Every public event key is a schema field; nothing extra is serialized.
+    allowed = {f for m in EVENT_MODELS for f in m.model_fields}
+    for line in paths["events"].read_text(encoding="utf-8").splitlines():
+        assert set(json.loads(line)) <= allowed
+    assert str(script.simulation_seed) not in result.setup.match_id

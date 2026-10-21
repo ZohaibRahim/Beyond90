@@ -6,22 +6,28 @@ Live analytics, AI agents, APIs and the frontend must never import this package;
 
 from beyond90.ground_truth.interventions import (
     INTERVENTION_SCHEMA_VERSION,
+    AppliedIntervention,
     DefensiveLineChange,
+    GroundTruthRecord,
     InterventionManifest,
     PressingChange,
     PressingIntensity,
     TacticalIntervention,
-    TempoChange,
+    TeamBaseline,
     Tempo,
+    TempoChange,
 )
 
 __all__ = [
     "INTERVENTION_SCHEMA_VERSION",
+    "AppliedIntervention",
     "DefensiveLineChange",
+    "GroundTruthRecord",
     "InterventionManifest",
     "PressingChange",
     "PressingIntensity",
     "TacticalIntervention",
+    "TeamBaseline",
     "Tempo",
     "TempoChange",
 ]

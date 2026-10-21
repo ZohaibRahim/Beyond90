@@ -73,3 +73,22 @@ def test_manifest_constraints(bad):
 def test_defensive_line_bounds():
     with pytest.raises(ValidationError):
         DefensiveLineChange.model_validate(_common(line_height_m=80.0))
+
+
+def test_baselines_must_be_unique_per_team():
+    base = {"team_id": "kes", "pressing": "low"}
+    with pytest.raises(ValidationError, match="baseline"):
+        InterventionManifest.model_validate(
+            {"match_id": "m001", "simulation_seed": 1, "baselines": [base, base]})
+
+
+def test_ground_truth_applied_must_reference_script():
+    from beyond90.ground_truth import GroundTruthRecord
+
+    script = {"match_id": "m001", "simulation_seed": 1, "interventions": [_press("i1")]}
+    record = {"simulator_version": "0", "script": script, "final_score": {"a": 1, "b": 0},
+              "applied": [{"intervention_id": "i1", "first_event_sequence": 5, "first_event_id": "e5"}]}
+    assert GroundTruthRecord.model_validate(record).applied[0].first_event_sequence == 5
+    record["applied"][0]["intervention_id"] = "ghost"
+    with pytest.raises(ValidationError, match="not in the script"):
+        GroundTruthRecord.model_validate(record)
