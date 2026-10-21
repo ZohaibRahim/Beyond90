@@ -11,7 +11,36 @@ Last updated: 2026-10-20. Keep this file current at the end of every stage.
 | 2.5 Corrections | Conditionally approved | `71f1695` | Goalkeeper back-pass mechanism, time-based possession, possession sequences, public/private report split, live public-only file access, paired-control intervention review |
 | 2.6 Final checks | Stage 3A requested next (no explicit approval recorded) | `cf07bac` | Mutually exclusive time accounting; fix for pass receptions piling up on the goal line and touchlines; pattern-vs-cause rule |
 | 3A Detection | Approved, completed | `c112976` | As-of feed with release-time semantics; rolling 5/10-min pressing metrics; deterministic sustained-change detector with insufficient-evidence outcome; structured findings; reconciled time-table display |
-| 3B.1 Dev benchmark | Awaiting review | `e7a8588` | Correctness pass (full evidence, interval overlap, z caveats); pre-registered protocol (`a33e74f`); development benchmark of 5 minimum-data configs; holdout locked and not run |
+| 3B.1 Dev benchmark | Approved, completed | `e7a8588` | Correctness pass (full evidence, interval overlap, z caveats); pre-registered protocol (`a33e74f`); development benchmark of 5 minimum-data configs; holdout locked and not run |
+| 3B.1B Final dev comparison | Awaiting review | this commit | n/a display fix; protocol Amendment 1 (`6062b8e`); primary z 2.33 / 2.00 / 1.64 on recent8 gates; recommend freezing `recent8_z233`; holdout not run |
+
+## Stage 3B part 1B: final bounded development comparison
+
+**Before running:**
+- **Protocol Amendment 1** (dated 2026-10-21, committed `6062b8e` before the run) is appended to `docs/EVALUATION_PROTOCOL.md`. It records why recall was insufficient: the primary z lacked power in small windows. It fixes the configurations, the selection rule and the tie-breakers in advance. Sections 1–8 and `docs/BENCHMARK_DEV_RESULTS.md` are unchanged.
+- **Defect fixed:** `WindowMetrics` displayed build-up rates only when the denominator was at least a fixed 10, but `recent8` accepts 8. As a result, 1 of 12 `recent8` development findings, and 329 assessed ticks, showed the primary rate as "n/a".
+  - Windows now display rates down to the gate the detector applies to that window. Decisions are unchanged (same 12 findings).
+  - Tests: a low-data detection displays its evidence, every assessed tick in real matches shows its primary rates, and statements never contain "n/a".
+- **Feed boundary re-verified** by a new tick-by-tick test. At every tick the detector holds exactly the events visible at that tick, every one released by then, and none withheld that should be visible.
+
+**Results** (same 30 development pairs; `docs/BENCHMARK_DEV_RESULTS_3B1B.md`):
+
+| Config | Correct | ≤15 min | Median delay | Early | Control FA | Treated non-target FA | Post-switch insufficient | vs `original`: lost / gained |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| original (reference) | 10/30 | 5 | 14.6 | 0 | 0 | 0 | 63.6% | — |
+| recent8_z233 | 12/30 | 7 | 13.8 | 0 | 0 | 0 | 23.7% | 0 / 2 |
+| recent8_z200 | 13/30 | 7 | 14.4 | 1 | 1 | 0 | 23.7% | 1 / 4 |
+| recent8_z164 | 12/30 | 6 | 15.1 | 2 | 4 (ineligible) | 0 | 23.7% | 2 / 4 |
+
+- **Selection** (Amendment 1): `recent8_z233`. `recent8_z200` gains only +1 and loses the false-alarm tie-breaker (1 vs 0); `recent8_z164` is ineligible.
+- **Reproducibility:** `original` and `recent8_z233` reproduce the part 1 results exactly.
+- **Recommendation to freeze:** `recent8_z233`, i.e. `DetectorConfig(min_recent_buildup=8, min_half_buildup=3)` with everything else at Stage 3A values. Awaiting the owner's approval; `DEFAULT_CONFIG` is unchanged.
+- **Unfavourable results** (recorded in the results file):
+  - lower z adds early alarms (which also appear in the paired controls) and longer delays;
+  - high-opportunity matches drop from 7/10 to 5/10 at z 1.64;
+  - recall stays at 43% or less;
+  - 16 of 30 switches are detected by no configuration.
+- **Last planned threshold experiment.** Further changes need a demonstrated correctness defect.
 
 ## Stage 3B part 1: correctness pass and development benchmark
 
@@ -119,6 +148,7 @@ The artifact had inflated scoring by creating point-blank positions. Goals per m
 
 ## Test results
 
+- Stage 3B part 1B: **331 passed** (about 6 s) (`.venv/Scripts/python -m pytest`). New tests: low-data detection displays its evidence (no n/a); assessed ticks always show primary rates (3 configs × 2 seeds × treated/control); tick-by-tick feed boundary; Amendment 1 candidate set, selection rule with tie-breakers, per-seed worsening.
 - Stage 3B part 1: **318 passed** (about 7 s) (`.venv/Scripts/python -m pytest`). New tests:
   - interval-overlap boundaries and brute-force controlled time;
   - full-evidence counts match the finding's metrics, all evidence was released by detection time, and later events have no effect;
@@ -202,4 +232,6 @@ Detection limitations (Stage 3A):
 
 ## Next task
 
-Awaiting the owner's decision on the proposed configuration (`recent8`). Then run the locked held-out split once (`python -m beyond90.benchmark --split holdout --unlock-holdout`) and report the results as they come out. Open question for the owner: whether to address the low-power primary test (statistical thresholds or method) before the holdout, which would require a protocol amendment and a fresh development comparison.
+Awaiting the owner's approval to freeze `recent8_z233`. Once frozen, and only on the owner's instruction, run the locked held-out split once with that configuration and report the results as they come out. Not started: AI agents, frontend, Azure.
+
+The holdout harness currently compares the part 1 candidate set. Before the holdout run it must be pointed at the single frozen configuration. That is a small harness change, to be made and reviewed alongside the freeze.
