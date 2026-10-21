@@ -13,7 +13,7 @@ Last updated: 2026-10-20. Keep this file current at the end of every stage.
 | 3A Detection | Approved, completed | `c112976` | As-of feed with release-time semantics; rolling 5/10-min pressing metrics; deterministic sustained-change detector with insufficient-evidence outcome; structured findings; reconciled time-table display |
 | 3B.1 Dev benchmark | Approved, completed | `e7a8588` | Correctness pass (full evidence, interval overlap, z caveats); pre-registered protocol (`a33e74f`); development benchmark of 5 minimum-data configs; holdout locked and not run |
 | 3B.1B Final dev comparison | Approved, completed | `8ef0d4a` | n/a display fix; protocol Amendment 1 (`6062b8e`); primary z 2.33 / 2.00 / 1.64 on recent8 gates; recommend freezing `recent8_z233`; holdout not run |
-| 3B.2 Held-out evaluation | Awaiting review | freeze `762db64`; results this commit | `recent8_z233` frozen as `DEFAULT_CONFIG`; held-out split run once on `762db64`: recall 8/30, 4 control false alarms; detector unchanged |
+| 3B.2 Held-out evaluation | Awaiting review | freeze `762db64`; results `1a0c656` | `recent8_z233` frozen as `DEFAULT_CONFIG`; held-out split run once on `762db64`: recall 8/30, 4 control false alarms; detector unchanged |
 
 ## Stage 3B part 2: freeze and final held-out evaluation
 
