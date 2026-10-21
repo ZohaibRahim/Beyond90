@@ -11,6 +11,33 @@ Last updated: 2026-10-20. Keep this file current at the end of every stage.
 | 2.5 Corrections | Conditionally approved | `71f1695` | Goalkeeper back-pass mechanism, time-based possession, possession sequences, public/private report split, live public-only file access, paired-control intervention review |
 | 2.6 Final checks | Stage 3A requested next (no explicit approval recorded) | `cf07bac` | Mutually exclusive time accounting; fix for pass receptions piling up on the goal line and touchlines; pattern-vs-cause rule |
 | 3A Detection | Approved, completed | `c112976` | As-of feed with release-time semantics; rolling 5/10-min pressing metrics; deterministic sustained-change detector with insufficient-evidence outcome; structured findings; reconciled time-table display |
+| 3B.1 Dev benchmark | Awaiting review | this commit | Correctness pass (full evidence, interval overlap, z caveats); pre-registered protocol (`a33e74f`); development benchmark of 5 minimum-data configs; holdout locked and not run |
+
+## Stage 3B part 1: correctness pass and development benchmark
+
+**Correctness pass (before benchmarking):**
+- **Full evidence:** `detection.evidence.finding_evidence(setup, events, finding)` replays exactly the events released at detection time. It returns every numerator and denominator event id (pressures, regains, every opponent pass in each pass statistic, controlled-possession intervals) for the baseline, the recent window and both halves. Findings keep only their headline ids. The CLI gains `--evidence`. Tests check that the counts reproduce the finding's metrics, that every evidence event was released by detection time, and that later events change nothing.
+- **Controlled-time fix (defect):** a controlled interval used to count its full duration in whichever window held its start time. Intervals are now stored as `[start, end)` and windows count only the overlap. Zero-length intervals are dropped.
+  - Tests: boundary unit tests, plus a brute-force comparison against `analytics.possession` with window edges inside intervals.
+  - Decisions are unchanged, because the metric is reported but not used to decide. The seed-42 finding is identical.
+- **Feed review:** no defect found. A new test checks that every event is released no earlier than its start, a pressure no earlier than its end, and a pass no earlier than the next event.
+- **z-score caveats:** documented in `detector.py` and the protocol. They are heuristics, not calibrated probabilities; overlapping windows make consecutive ticks strongly dependent, and multiple testing inflates the chance of a spurious finding.
+
+**Benchmark:** protocol in `docs/EVALUATION_PROTOCOL.md`, committed (`a33e74f`) before any development run. The harness is `beyond90.benchmark`; live packages may not import it, and the holdout is locked. The aggregate report is in `docs/BENCHMARK_DEV_RESULTS.md`; per-match hidden details are in `reports/private/` (gitignored).
+
+**Development results** (30 pairs; statistical thresholds fixed; only minimum-data gates varied):
+
+| Config | Correct | ≤15 min | Early | Median delay | Control FA | Post-switch insufficient |
+|---|---:|---:|---:|---:|---:|---:|
+| original (15/6) | 10/30 | 5 | 0 | 14.6 min | 0 | 63.6% |
+| recent12 (12/5) | 10/30 | 5 | 0 | 14.3 min | 0 | 48.9% |
+| recent10 (10/4) | 10/30 | 6 | 0 | 13.8 min | 0 | 37.8% |
+| recent10_base30 | 10/30 | 6 | 0 | 13.8 min | 0 | 37.8% |
+| recent8 (8/3) | 12/30 | 7 | 0 | 13.8 min | 0 | 23.7% |
+
+- **Selection:** the pre-registered rule proposes `recent8`, which gets 2 more correct detections with zero control false alarms. It is not adopted: `DEFAULT_CONFIG` is unchanged pending the owner's approval.
+- **Opportunity:** no configuration detects anything in the low-opportunity third (fewer than 14.3 opponent build-up passes per 10 minutes) except `recent8` (2/10). The high-opportunity third gets 7/10 under every configuration.
+- **Diagnostic:** after relaxing the minimum-data gates, most post-switch ticks fail the primary z test (median ratio 2.3×, median z 1.94) or lack corroboration. Further recall gains would need a change to the statistical thresholds or the method, which is a decision for the owner.
 
 ## Stage 3A: deterministic pressing-change detection
 
@@ -92,7 +119,15 @@ The artifact had inflated scoring by creating point-blank positions. Goals per m
 
 ## Test results
 
-- Stage 3A: **302 passed** (`.venv/Scripts/python -m pytest`, about 8 s). New tests cover:
+- Stage 3B part 1: **318 passed** (about 7 s) (`.venv/Scripts/python -m pytest`). New tests:
+  - interval-overlap boundaries and brute-force controlled time;
+  - full-evidence counts match the finding's metrics, all evidence was released by detection time, and later events have no effect;
+  - feed release ordering;
+  - split frozen, disjoint and excluding seeds 42 and 0–29; holdout locked;
+  - candidate configs vary only the data gates;
+  - the selection rule and Wilson interval;
+  - seed-42 scoring reproduces the 14.4-minute delay.
+- Stage 3A: 302 passed (`.venv/Scripts/python -m pytest`, about 8 s). New tests cover:
   - the as-of feed and the rolling metrics;
   - detector logic with scripted windows (persistence, spike, uncorroborated, sparse, too early, decrease);
   - cutoff equals event-prefix analysis, a different future changes nothing, and the hidden script has no influence before the switch;
@@ -167,4 +202,4 @@ Detection limitations (Stage 3A):
 
 ## Next task
 
-Stage 3B: evaluate the detector systematically on separate development and held-out scenario sets: detection accuracy, false alarms on controls, detection delay, explanation reliability. Choose any threshold changes on development seeds only, with stated reasons, then report held-out results once.
+Awaiting the owner's decision on the proposed configuration (`recent8`). Then run the locked held-out split once (`python -m beyond90.benchmark --split holdout --unlock-holdout`) and report the results as they come out. Open question for the owner: whether to address the low-power primary test (statistical thresholds or method) before the holdout, which would require a protocol amendment and a fresh development comparison.
