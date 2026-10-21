@@ -5,6 +5,10 @@ import pytest
 from beyond90.benchmark import DEV_SEEDS, HOLDOUT_SEEDS, HoldoutLockedError, seeds_for
 from beyond90.benchmark.scoring import (
     CANDIDATES,
+    CANDIDATES_1B,
+    ORDER_1B,
+    select_1b,
+    worsening,
     CONSERVATIVE_ORDER,
     ConfigSummary,
     PairScore,
@@ -70,7 +74,7 @@ def _summary(name, outcomes, delays_min=(), control_fa=0, early=0):
                                 target_post_ticks=1, target_post_insufficient=0))
     for i in range(control_fa):
         scores[i].control_false_alarms += 1
-    return ConfigSummary(name, CANDIDATES[name], scores)
+    return ConfigSummary(name, {**CANDIDATES, **CANDIDATES_1B}[name], scores)
 
 
 def test_selection_rule():
@@ -91,3 +95,45 @@ def test_selection_rule():
     # Early detections: at most one allowed.
     early = _summary("recent12", ["correct"] * 20 + ["early"] * 2 + ["miss"] * 8, [10] * 20)
     assert not early.eligible
+
+
+# -- Amendment 1 (Stage 3B part 1B) -------------------------------------------------------
+
+def test_1b_candidates_vary_only_primary_z_on_recent8_gates():
+    import dataclasses
+
+    base = CANDIDATES["recent8"]
+    assert CANDIDATES_1B["original"] == DEFAULT_CONFIG
+    assert CANDIDATES_1B["recent8_z233"] == base
+    assert [CANDIDATES_1B[n].z_primary for n in ORDER_1B] == [2.33, 2.00, 1.64]
+    for n in ORDER_1B:
+        assert dataclasses.replace(CANDIDATES_1B[n], z_primary=base.z_primary) == base
+    assert "original" not in ORDER_1B  # reference only
+
+
+def test_1b_selection_rule():
+    z233 = _summary("recent8_z233", ["correct"] * 12 + ["miss"] * 18, [14] * 12)
+    plus2 = _summary("recent8_z200", ["correct"] * 14 + ["miss"] * 16, [16] * 14)
+    plus1 = _summary("recent8_z200", ["correct"] * 13 + ["miss"] * 17, [14] * 12 + [20])
+    assert select_1b([z233, plus2]) == "recent8_z200"          # meaningful gain wins outright
+    assert select_1b([z233, plus1]) == "recent8_z233"          # +1, no tie-break advantage (same <=15 count)
+    plus1_fast = _summary("recent8_z200", ["correct"] * 13 + ["miss"] * 17, [10] * 13)
+    assert select_1b([z233, plus1_fast]) == "recent8_z200"     # +1 and more detections within 15 min
+    fewer = _summary("recent8_z200", ["correct"] * 11 + ["miss"] * 19, [5] * 11)
+    assert select_1b([z233, fewer]) == "recent8_z233"          # fewer correct never wins a tie-break
+    noisy = _summary("recent8_z164", ["correct"] * 20 + ["miss"] * 10, [10] * 20, control_fa=4)
+    assert select_1b([z233, plus2, noisy]) == "recent8_z200"   # ineligible: > 3 control false alarms
+    three_fa = _summary("recent8_z164", ["correct"] * 16 + ["miss"] * 14, [10] * 16, control_fa=3)
+    assert select_1b([z233, plus2, three_fa]) == "recent8_z164"  # exactly 3 allowed; +2 over z200
+    early2 = _summary("recent8_z200", ["correct"] * 20 + ["early"] * 2 + ["miss"] * 8, [10] * 20)
+    assert select_1b([z233, early2]) == "recent8_z233"
+    bad = _summary("recent8_z233", ["miss"] * 30, control_fa=5)
+    assert select_1b([bad]) == "recent8_z233"                  # documented fallback
+
+
+def test_worsening_counts_per_seed_changes():
+    ref = _summary("original", ["correct", "correct", "miss", "correct"], [10, 10, 10])
+    new = _summary("recent8_z200", ["correct", "miss", "correct", "correct"], [12, 9, 8])
+    new.scores[0].control_false_alarms = 2
+    w = worsening(new, ref)
+    assert (w.kept, w.gained, w.lost, w.later, w.extra_control_fa) == (2, 1, 1, 1, 2)

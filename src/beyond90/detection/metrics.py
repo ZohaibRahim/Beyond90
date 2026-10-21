@@ -50,6 +50,8 @@ LONG_PASS_M = 30.0
 KEEPER_LONG_M = 35.0
 
 # Minimum denominators below which a rate is reported as None (insufficient data).
+# MIN_BUILDUP_PASSES is only the default for ad-hoc windows: the detector passes the
+# gate that applies to each window it decides on, so evidence it accepts is never hidden.
 MIN_BUILDUP_PASSES = 10
 MIN_PASSES = 20
 MIN_KEEPER_PASSES = 3
@@ -142,6 +144,7 @@ class WindowMetrics:
     opp_keeper_passes: int
     opp_keeper_long: int
     opp_controlled_min: float
+    min_buildup: int = MIN_BUILDUP_PASSES
 
     @staticmethod
     def _rate(n: float, d: float, minimum: float) -> float | None:
@@ -149,11 +152,11 @@ class WindowMetrics:
 
     @property
     def high_pressures_per_buildup_pass(self) -> float | None:
-        return self._rate(self.high_pressures, self.opp_buildup_passes, MIN_BUILDUP_PASSES)
+        return self._rate(self.high_pressures, self.opp_buildup_passes, self.min_buildup)
 
     @property
     def high_regains_per_buildup_pass(self) -> float | None:
-        return self._rate(self.high_regains, self.opp_buildup_passes, MIN_BUILDUP_PASSES)
+        return self._rate(self.high_regains, self.opp_buildup_passes, self.min_buildup)
 
     @property
     def high_pressures_per_opp_controlled_min(self) -> float | None:
@@ -161,7 +164,7 @@ class WindowMetrics:
 
     @property
     def opp_defensive_third_completion(self) -> float | None:
-        return self._rate(self.opp_buildup_completed, self.opp_buildup_passes, MIN_BUILDUP_PASSES)
+        return self._rate(self.opp_buildup_completed, self.opp_buildup_passes, self.min_buildup)
 
     @property
     def opp_long_pass_share(self) -> float | None:
@@ -257,11 +260,12 @@ class RollingState:
         self._prev, self._prev_ball, self._prev_possession = e, self.tracker.ball, self.tracker.possession
         self.ingested += 1
 
-    def window(self, team: str, start_ms: int, end_ms: int) -> WindowMetrics:
+    def window(self, team: str, start_ms: int, end_ms: int,
+               min_buildup: int = MIN_BUILDUP_PASSES) -> WindowMetrics:
         start_ms = max(0, start_ms)
         g = lambda key: self._series[(team, key)].total(start_ms, end_ms)  # noqa: E731
         return WindowMetrics(
-            team_id=team, start_ms=start_ms, end_ms=end_ms,
+            team_id=team, start_ms=start_ms, end_ms=end_ms, min_buildup=min_buildup,
             pressures=int(g("pressures")), high_pressures=int(g("high_pressures")),
             high_regains=int(g("high_regains")), opp_buildup_passes=int(g("opp_buildup_passes")),
             opp_buildup_completed=int(g("opp_buildup_completed")), opp_passes=int(g("opp_passes")),

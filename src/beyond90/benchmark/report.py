@@ -11,6 +11,7 @@ from collections.abc import Sequence
 
 from beyond90.benchmark.scoring import (
     CONSERVATIVE_ORDER,
+    worsening,
     MAX_CONTROL_FA_PER_MATCH,
     MAX_EARLY,
     MINUTE_MS,
@@ -29,9 +30,12 @@ def _ci(k: int, n: int) -> str:
     return f"{k}/{n} ({100 * k / n:.0f}%, 95% CI {100 * lo:.0f}–{100 * hi:.0f}%)"
 
 
-def render_summary(split: str, summaries: Sequence[ConfigSummary], proposal: str | None) -> str:
+def render_summary(split: str, summaries: Sequence[ConfigSummary], proposal: str | None,
+                   order: Sequence[str] = CONSERVATIVE_ORDER, title: str = "", notes: Sequence[str] = (),
+                   selection_text: str = "Selection rule (protocol section 7)") -> str:
     n = summaries[0].n
-    out = [f"# Detector benchmark — {split} split", "",
+    out = [f"# Detector benchmark — {split} split{f' — {title}' if title else ''}", "",
+           *[line for note in notes for line in (note, "")],
            f"{n} seeds, each a treated match (hidden LOW→HIGH press switch for the away team in 53'–65') and its "
            "paired no-intervention control. Scoring and selection follow `docs/EVALUATION_PROTOCOL.md`, "
            "fixed before this run. All configurations are reported.", "",
@@ -51,13 +55,13 @@ def render_summary(split: str, summaries: Sequence[ConfigSummary], proposal: str
             f"{'yes' if s.eligible else 'no'} |")
     out += ["", f"Eligible = control false alarms ≤ {MAX_CONTROL_FA_PER_MATCH:.2f} per match and ≤ {MAX_EARLY} "
             "early detection.", "", "## Configurations", "",
-            "| Config | min_baseline_ms | min_baseline_buildup | min_recent_buildup | min_half_buildup |",
-            "|---|---:|---:|---:|---:|"]
+            "| Config | min_baseline_ms | min_baseline_buildup | min_recent_buildup | min_half_buildup | z_primary |",
+            "|---|---:|---:|---:|---:|---:|"]
     for s in summaries:
         c = s.config
         out.append(f"| `{s.name}` | {c.min_baseline_ms // MINUTE_MS} min | {c.min_baseline_buildup} | "
-                   f"{c.min_recent_buildup} | {c.min_half_buildup} |")
-    out += ["", "All statistical thresholds unchanged from Stage 3A (z 2.33 / 1.64, ratio 1.5, half ratio 1.2, "
+                   f"{c.min_recent_buildup} | {c.min_half_buildup} | {c.z_primary:.2f} |")
+    out += ["", "All other thresholds as in Stage 3A (corroboration z 1.64, ratio 1.5, half ratio 1.2, "
             "3-tick persistence).", "", "## Insufficient evidence", "",
             "| Config | All team-ticks | Target team after switch | …baseline length | …baseline build-up "
             "| …recent build-up | …5-min half |", "|---|---:|---:|---:|---:|---:|---:|"]
@@ -91,9 +95,27 @@ def render_summary(split: str, summaries: Sequence[ConfigSummary], proposal: str
         out.append("No configuration is eligible under the protocol; none is proposed. `original` stays pending "
                    "the owner's decision.")
     else:
-        out.append(f"Selection rule (protocol section 7), applied in order {', '.join(CONSERVATIVE_ORDER)}: "
+        out.append(f"{selection_text}, applied in order {', '.join(order)}: "
                    f"**`{proposal}`**. This is a proposal for approval; `DEFAULT_CONFIG` is unchanged and the "
                    "held-out split has not been run.")
+    out.append("")
+    return "\n".join(out)
+
+
+def render_worsening(summaries: Sequence[ConfigSummary], reference: str) -> str:
+    ref = next(s for s in summaries if s.name == reference)
+    out = ["## Changes relative to the original baseline", "",
+           f"Per-seed comparison with `{reference}` on the same pairs. Lost = `{reference}` detected the switch "
+           "correctly but this configuration missed it or fired early. Later = both correct, this one later. "
+           "Extra FA = additional false alarms, summed over matches.", "",
+           "| Config | Kept | Gained | Lost | Later | Extra control FA | Extra treated non-target FA |",
+           "|---|---:|---:|---:|---:|---:|---:|"]
+    for s in summaries:
+        if s.name == reference:
+            continue
+        w = worsening(s, ref)
+        out.append(f"| `{s.name}` | {w.kept} | {w.gained} | {w.lost} | {w.later} | {w.extra_control_fa} | "
+                   f"{w.extra_treated_fa} |")
     out.append("")
     return "\n".join(out)
 

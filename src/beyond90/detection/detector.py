@@ -179,9 +179,11 @@ class PressingChangeDetector:
     def _evaluate_team(self, team: str, at: MatchTime, now: int) -> tuple[Assessment, Finding | None]:
         c, st, track = self.config, self.state, self.tracks[team]
         recent_start, half = now - c.long_window_ms, now - c.short_window_ms
-        base = st.window(team, 0, recent_start)
-        recent = st.window(team, recent_start, now)
-        h1, h2 = st.window(team, recent_start, half), st.window(team, half, now)
+        # Each window displays rates down to the gate the decision applies to it.
+        base = st.window(team, 0, recent_start, c.min_baseline_buildup)
+        recent = st.window(team, recent_start, now, c.min_recent_buildup)
+        h1 = st.window(team, recent_start, half, c.min_half_buildup)
+        h2 = st.window(team, half, now, c.min_half_buildup)
         metrics = {f"recent_{k}": v for k, v in recent.as_dict().items()}
         metrics |= {f"baseline_{k}": v for k, v in base.as_dict().items()}
 

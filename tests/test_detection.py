@@ -1,3 +1,4 @@
+import dataclasses
 import re
 from functools import cache
 
@@ -6,6 +7,7 @@ import pytest
 from beyond90.detection import (
     DEFAULT_CONFIG,
     DetectionResult,
+    DetectorConfig,
     Direction,
     EvidenceStatus,
     PressingChangeDetector,
@@ -86,7 +88,10 @@ class StubState:
     def elapsed_ms(self, period, clock_ms):
         return clock_ms
 
-    def window(self, team, start, end):
+    def window(self, team, start, end, min_buildup=10):
+        return dataclasses.replace(self._window(team, start, end), min_buildup=min_buildup)
+
+    def _window(self, team, start, end):
         base, h1, h2 = self.scenario(team)
         if start == 0:
             return base
@@ -102,8 +107,8 @@ class StubState:
         return [f"{team}-{key}-{start}"]
 
 
-def run_ticks(scenario, minutes):
-    d = PressingChangeDetector(SETUP)
+def run_ticks(scenario, minutes, config=DEFAULT_CONFIG):
+    d = PressingChangeDetector(SETUP, config)
     stub = StubState(scenario)
     d.state = stub
     for m in minutes:
@@ -147,8 +152,8 @@ def statuses(d, team="kes"):
 def test_stub_returns_distinct_halves():
     stub = StubState(spike)
     stub._now = 40 * 60_000
-    assert stub.window("kes", 30 * 60_000, 35 * 60_000).high_pressures == 9
-    assert stub.window("kes", 35 * 60_000, 40 * 60_000).high_pressures == 0
+    assert stub._window("kes", 30 * 60_000, 35 * 60_000).high_pressures == 9
+    assert stub._window("kes", 35 * 60_000, 40 * 60_000).high_pressures == 0
 
 
 def test_sustained_change_needs_three_consecutive_ticks_and_reports_once():
@@ -350,3 +355,65 @@ def test_evidence_is_unaffected_by_later_events():
         detected = MatchTime(f.detected_period, f.detected_clock_ms)
         k = len(AsOfFeed(r.events).visible(detected))
         assert finding_evidence(r.setup, r.events[: k + 1], f) == finding_evidence(r.setup, r.events, f)
+
+
+# -- Stage 3B part 1B: displayed evidence follows the detector's own gates ---------------
+
+LOW_DATA = DetectorConfig(min_recent_buildup=8, min_half_buildup=3)
+
+
+def test_valid_low_data_detection_never_displays_primary_evidence_as_na():
+    def sparse_press(team):
+        if team != "kes":
+            return steady(team)
+        half = W(team, hp=3, bp=4, comp=1, regains=1)  # 8 build-up passes in 10 min: valid under LOW_DATA
+        return W(team, hp=10, bp=100), half, half
+
+    d = run_ticks(sparse_press, range(31, 35), LOW_DATA)
+    assert d.findings, [a.reason for a in d.assessments]
+    f = d.findings[0]
+    assert f.metrics["recent_opp_buildup_passes"] == 8
+    assert f.metrics["recent_high_pressures_per_buildup_pass"] == pytest.approx(0.75)
+    assert f.metrics["recent_opp_defensive_third_completion"] == pytest.approx(0.25)
+    assert f.metrics["baseline_high_pressures_per_buildup_pass"] == pytest.approx(0.10)
+    assert "n/a" not in f.statement and "0.75" in f.statement
+
+
+def test_window_rate_minimum_is_explicit():
+    w = W("kes", hp=3, bp=8)
+    assert w.high_pressures_per_buildup_pass is None  # default minimum 10
+    assert dataclasses.replace(w, min_buildup=8).high_pressures_per_buildup_pass == pytest.approx(3 / 8)
+
+
+@pytest.mark.parametrize("config", [DEFAULT_CONFIG, LOW_DATA, DetectorConfig(min_recent_buildup=8, min_half_buildup=3,
+                                                                              z_primary=1.64)])
+@pytest.mark.parametrize("seed", [0, 42])
+def test_assessed_ticks_always_display_their_primary_rates(seed, config):
+    for r in pair(seed):
+        result = detect(r.setup, r.events, config=config)
+        for a in result.assessments:
+            if a.status is not EvidenceStatus.INSUFFICIENT_EVIDENCE:
+                for key in ("recent_high_pressures_per_buildup_pass", "baseline_high_pressures_per_buildup_pass",
+                            "recent_opp_defensive_third_completion", "baseline_opp_defensive_third_completion"):
+                    assert a.metrics[key] is not None, (a.period, a.clock_ms, key)
+        for f in result.findings:
+            assert "n/a" not in f.statement
+
+
+@pytest.mark.parametrize("seed", [0, 42])
+def test_detector_only_ever_holds_events_released_by_each_tick(seed):
+    from beyond90.detection import evaluation_ticks
+
+    r = pair(seed)[0]
+    feed, releases = AsOfFeed(r.events), release_times(r.events)
+    d = PressingChangeDetector(r.setup)
+    ticks = evaluation_ticks(feed)
+    assert len(ticks) > 80
+    for tick in ticks:
+        visible = feed.visible(tick)
+        d.ingest(visible)
+        d.evaluate(tick)
+        assert d.state.ingested == len(visible)
+        assert all(rel is not None and rel <= tick for rel in releases[: d.state.ingested])
+        nxt = d.state.ingested
+        assert nxt == len(r.events) or releases[nxt] is None or releases[nxt] > tick  # nothing withheld

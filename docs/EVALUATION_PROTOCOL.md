@@ -93,4 +93,57 @@ The chosen configuration is a **proposal** for the owner's approval. It is not a
 
 ## Amendments
 
-None.
+Sections 1–8 above are the original protocol, unchanged. The results of the original
+comparison stay in `docs/BENCHMARK_DEV_RESULTS.md` (commit `e7a8588`) and are not
+rewritten. Amendments are appended below and never edit earlier text.
+
+### Amendment 1 — 2026-10-21: final bounded comparison of the primary z threshold (Stage 3B part 1B)
+
+Written and committed before any run of this comparison. The owner approved Stage 3B part 1.
+
+**Why the original detector has insufficient recall.** Development results (`e7a8588`):
+- **Recall:** `original` detected 10/30 switches, and the best minimum-data relaxation (`recent8`) 12/30. All configurations had 0 control false alarms.
+- **Diagnosis:** this used target-team ticks whose 10-minute window lay entirely after the switch (descriptive, development data only).
+  - Under `recent8`, 24% of those ticks were still insufficient evidence.
+  - 47% failed the primary test. The pressing rate ratio was well above the 1.5 floor (median 2.30×), but the primary z was not (median 1.94 against a 2.33 threshold).
+  - A 10-minute window holds only about 8–20 opposition build-up passes. With so few counts, the one-sided 1% threshold (z 2.33) lacks the power to confirm increases of this size.
+  - Relaxing the minimum-data gates alone cannot fix this: it admits windows that are even smaller.
+- **No false-alarm pressure:** with zero false alarms in 30 controls at every setting, the detector appeared conservative. The upper end of the 95% interval for controls with any false alarm is about 11%, though, so a lower z threshold could still exceed the false-alarm limit. That is the trade-off this comparison measures.
+
+**Correctness fix made before this run** (not a tuning change). `WindowMetrics` hid build-up rates whose denominator was below a fixed 10, while `recent8` accepts 8 build-up passes. One of 12 `recent8` development findings therefore displayed its primary evidence as "n/a". Windows now display rates down to the gate the detector applies to that window. Decisions are unchanged: re-running `recent8` gives the same 12 findings.
+
+**Configurations** (development seeds only, same 30 pairs; held-out seeds untouched):
+
+| Name | Minimum-data gates | z_primary | Role |
+|---|---|---:|---|
+| `original` | 20 min / 40 / 15 / 6 | 2.33 | Reference only: the Stage 3A detector, re-run as a reproducibility check and the baseline for "worsening". Not selectable. |
+| `recent8_z233` | 20 min / 40 / 8 / 3 | 2.33 | Existing baseline (identical to `recent8` in part 1) |
+| `recent8_z200` | 20 min / 40 / 8 / 3 | 2.00 | |
+| `recent8_z164` | 20 min / 40 / 8 / 3 | 1.64 | |
+
+Everything else is unchanged: ratio ≥ 1.5, both halves ≥ 1.2×, at least one corroborating signal at z ≥ 1.64, and 3-tick persistence. The simulator, scenario scripts, seed split and intervention strength are unchanged. Scoring follows section 4 unchanged.
+
+**Selection rule for this comparison:**
+1. **Eligible:**
+   - at most 3 false alarms across the 30 control matches;
+   - at most 1 early detection.
+2. **Order** from most to least conservative: `recent8_z233`, `recent8_z200`, `recent8_z164`. The current choice starts as the most conservative eligible one.
+3. **Replacement:** each less conservative eligible configuration replaces the current choice only for a **meaningful recall improvement**, meaning at least 2 more correct detections (out of 30) than the current choice.
+4. **Tie-breakers.** These apply when a less conservative configuration does not gain 2 or more detections, or when choosing between configurations that both qualify. In order:
+   - more correct detections within 15 minutes;
+   - fewer total false alarms (control plus treated non-target);
+   - shorter median delay, counting only if at least 2 minutes shorter;
+   - otherwise the more conservative configuration.
+
+   Sequential replacement means a configuration that gains 2 or more over its predecessor wins outright. The tie-breakers apply only when the less conservative configuration gains 0 or 1 correct detections. A less conservative configuration with fewer correct detections never replaces the current choice.
+5. **No eligible configuration:** recommend `recent8_z233`, which is eligible in part 1.
+
+**Worsening relative to the original baseline.** For each configuration, report per-seed changes against `original`:
+- matches it detected that `original` detected;
+- matches `original` detected that it missed or detected early;
+- matches with a later detection;
+- extra control and treated false alarms.
+
+These are reported whatever they show.
+
+**This is the last planned threshold experiment.** After it, one configuration is recommended to freeze. The held-out split is run only on the owner's instruction. Further threshold changes require a demonstrated correctness defect and a new amendment.

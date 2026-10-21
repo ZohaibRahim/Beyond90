@@ -27,6 +27,17 @@ CANDIDATES: dict[str, DetectorConfig] = {
 }
 # Most to least conservative (protocol section 7).
 CONSERVATIVE_ORDER = ("original", "recent12", "recent10", "recent10_base30", "recent8")
+
+# Amendment 1 (protocol, 2026-10-21): final bounded comparison of the primary z threshold.
+_RECENT8 = dict(min_recent_buildup=8, min_half_buildup=3)
+CANDIDATES_1B: dict[str, DetectorConfig] = {
+    "original": DetectorConfig(),  # reference only, not selectable
+    "recent8_z233": DetectorConfig(**_RECENT8, z_primary=2.33),
+    "recent8_z200": DetectorConfig(**_RECENT8, z_primary=2.00),
+    "recent8_z164": DetectorConfig(**_RECENT8, z_primary=1.64),
+}
+ORDER_1B = ("recent8_z233", "recent8_z200", "recent8_z164")
+FALLBACK_1B = "recent8_z233"
 MAX_CONTROL_FA_PER_MATCH = 0.10
 MAX_EARLY = 1
 MIN_EXTRA_CORRECT = 2
@@ -204,6 +215,53 @@ def select(summaries: Sequence[ConfigSummary], order: Sequence[str] = CONSERVATI
         if more_correct or faster:
             choice = cand
     return choice.name
+
+
+def select_1b(summaries: Sequence[ConfigSummary], order: Sequence[str] = ORDER_1B) -> str:
+    """Amendment 1 selection rule: +2 correct wins; smaller non-negative gains go to tie-breakers."""
+    by_name = {s.name: s for s in summaries}
+    eligible = [by_name[n] for n in order if n in by_name and by_name[n].eligible]
+    if not eligible:
+        return FALLBACK_1B
+    choice = eligible[0]
+    for cand in eligible[1:]:
+        gain = cand.correct - choice.correct
+        if gain >= MIN_EXTRA_CORRECT or (gain >= 0 and _wins_tiebreak(cand, choice)):
+            choice = cand
+    return choice.name
+
+
+def _wins_tiebreak(cand: ConfigSummary, choice: ConfigSummary) -> bool:
+    if cand.correct_within != choice.correct_within:
+        return cand.correct_within > choice.correct_within
+    cand_fa, choice_fa = cand.control_fa + cand.treated_fa, choice.control_fa + choice.treated_fa
+    if cand_fa != choice_fa:
+        return cand_fa < choice_fa
+    cd, ch = cand.median_delay_min, choice.median_delay_min
+    return cd is not None and (ch is None or cd <= ch - MIN_DELAY_GAIN_MS / MINUTE_MS)
+
+
+@dataclass(frozen=True)
+class Worsening:
+    kept: int    # correct under both
+    lost: int    # reference correct; this config missed or fired early
+    gained: int  # this config correct; reference not
+    later: int   # both correct; this config later
+    extra_control_fa: int
+    extra_treated_fa: int
+
+
+def worsening(summary: ConfigSummary, reference: ConfigSummary) -> Worsening:
+    pairs = list(zip(summary.scores, reference.scores, strict=True))
+    assert all(a.seed == b.seed for a, b in pairs)
+    return Worsening(
+        kept=sum(a.outcome == b.outcome == "correct" for a, b in pairs),
+        lost=sum(b.outcome == "correct" and a.outcome != "correct" for a, b in pairs),
+        gained=sum(a.outcome == "correct" and b.outcome != "correct" for a, b in pairs),
+        later=sum(a.outcome == b.outcome == "correct" and a.delay_ms > b.delay_ms for a, b in pairs),
+        extra_control_fa=sum(max(0, a.control_false_alarms - b.control_false_alarms) for a, b in pairs),
+        extra_treated_fa=sum(max(0, a.treated_false_alarms - b.treated_false_alarms) for a, b in pairs),
+    )
 
 
 def opportunity_thirds(scores: Sequence[PairScore]) -> tuple[float, float]:
