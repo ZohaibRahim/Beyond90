@@ -12,6 +12,7 @@ from beyond90.detection.detector import (
     detect,
     evaluation_ticks,
 )
+from beyond90.detection.evidence import FindingEvidence, WindowEvidence, finding_evidence
 from beyond90.detection.metrics import RollingState, WindowMetrics
 
 __all__ = [
@@ -22,9 +23,12 @@ __all__ = [
     "Direction",
     "EvidenceStatus",
     "Finding",
+    "FindingEvidence",
     "PressingChangeDetector",
     "RollingState",
+    "WindowEvidence",
     "WindowMetrics",
     "detect",
     "evaluation_ticks",
+    "finding_evidence",
 ]

@@ -48,3 +48,18 @@ def test_visible_set_is_a_prefix_of_started_events(seed):
             assert vis == evs[: len(vis)]
             assert all(event_time(e) <= t for e in vis)  # nothing that started after T
             assert all(r <= t for r in releases[: len(vis)])
+
+
+@pytest.mark.parametrize("seed", [0, 42])
+def test_every_event_released_no_earlier_than_it_started_or_resolved(seed):
+    evs = events(seed)
+    releases = release_times(evs)
+    for i, (e, r) in enumerate(zip(evs, releases)):
+        assert r is not None or i == len(evs) - 1 and isinstance(e, PassEvent)
+        if r is None:
+            continue
+        assert r >= event_time(e)
+        if isinstance(e, PressureEvent):
+            assert r >= (e.period, e.clock_ms + e.duration_ms)
+        if isinstance(e, PassEvent):
+            assert r >= event_time(evs[i + 1])

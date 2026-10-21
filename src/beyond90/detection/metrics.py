@@ -14,6 +14,12 @@ Definitions (team frame = coordinates where that team attacks toward x = 105):
 - opp long pass: opponent pass of >= 30 m (any start location).
 - opp keeper distribution: passes by the opponent's current goalkeeper; long = >= 35 m.
 - opp controlled time: time the opponent controlled the ball (see analytics.possession).
+  Stored as intervals; a window counts only the overlapping part of each interval. An
+  interval is known only once the event that ends it has been released, so the
+  possession in progress at the query time is not yet counted.
+
+Events are counted at their START time; a window [a, b) holds released events that
+started in it.
 
 These are counts and rates of observable events. They describe associations only;
 no metric labels any individual pass or turnover as caused by pressure.
@@ -22,7 +28,7 @@ no metric labels any individual pass or turnover as caused by pressure.
 from __future__ import annotations
 
 import math
-from bisect import bisect_left
+from bisect import bisect_left, bisect_right
 from dataclasses import dataclass
 
 from beyond90.analytics.possession import TimeCategory, categorize_interval
@@ -52,9 +58,11 @@ MIN_CONTROLLED_MIN = 2.0
 SERIES = (
     "pressures", "high_pressures", "high_regains",
     "opp_passes", "opp_long_passes", "opp_buildup_passes", "opp_buildup_completed",
-    "opp_keeper_passes", "opp_keeper_long", "opp_controlled_ms",
+    "opp_keeper_passes", "opp_keeper_long",
 )
-ID_SERIES = ("high_pressures", "high_regains")
+# Evidence keys: every counted series plus the opponent's controlled-possession intervals
+# (identified by the event that starts each interval).
+EVIDENCE_KEYS = SERIES + ("opp_controlled_intervals",)
 
 
 class _Series:
@@ -76,6 +84,43 @@ class _Series:
     def total(self, start: int, end: int) -> float:
         lo, hi = self._span(start, end)
         return self.cumulative[hi] - self.cumulative[lo]
+
+    def event_ids(self, start: int, end: int) -> list[str]:
+        lo, hi = self._span(start, end)
+        return self.ids[lo:hi]
+
+
+class _IntervalSeries:
+    """Non-overlapping, time-ordered [start, end) intervals. A window query counts only the
+    part of each interval that overlaps the window."""
+
+    def __init__(self) -> None:
+        self.starts: list[int] = []
+        self.ends: list[int] = []
+        self.cumulative: list[int] = [0]
+        self.ids: list[str] = []
+
+    def add(self, start: int, end: int, event_id: str) -> None:
+        assert end >= start and (not self.ends or start >= self.ends[-1]), "intervals must be ordered"
+        if end == start:
+            return  # zero duration: contributes no time and is not evidence
+        self.starts.append(start)
+        self.ends.append(end)
+        self.cumulative.append(self.cumulative[-1] + end - start)
+        self.ids.append(event_id)
+
+    def _span(self, start: int, end: int) -> tuple[int, int]:
+        # Intervals with end > start and start < end overlap the window.
+        return bisect_right(self.ends, start), bisect_left(self.starts, end)
+
+    def total(self, start: int, end: int) -> int:
+        lo, hi = self._span(start, end)
+        if end <= start or lo >= hi:
+            return 0
+        overlap = self.cumulative[hi] - self.cumulative[lo]
+        overlap -= max(0, start - self.starts[lo])
+        overlap -= max(0, self.ends[hi - 1] - end)
+        return overlap
 
     def event_ids(self, start: int, end: int) -> list[str]:
         lo, hi = self._span(start, end)
@@ -155,6 +200,7 @@ class RollingState:
         self.period1_end_ms: int | None = None
         self.ingested = 0
         self._series = {(t, k): _Series() for t in setup.team_ids for k in SERIES}
+        self._controlled = {t: _IntervalSeries() for t in setup.team_ids}  # keyed by presser
         self._prev: MatchEvent | None = None
         self._prev_ball = None
         self._prev_possession: str | None = None
@@ -177,7 +223,7 @@ class RollingState:
                 holder = self._prev_possession
                 presser = setup.opponent_id(holder)
                 start = self.elapsed_ms(prev.period, prev.clock_ms)
-                self._series[(presser, "opp_controlled_ms")].add(start, e.clock_ms - prev.clock_ms)
+                self._controlled[presser].add(start, start + e.clock_ms - prev.clock_ms, prev.event_id)
 
         keeper_before = dict(self.tracker.goalkeeper)
         self.tracker.apply(e)
@@ -193,17 +239,18 @@ class RollingState:
             presser = setup.opponent_id(e.team_id)
             s = lambda key: self._series[(presser, key)]  # noqa: E731
             length = math.hypot(e.end_location.x - e.location.x, e.end_location.y - e.location.y)
-            s("opp_passes").add(t)
+            eid = e.event_id
+            s("opp_passes").add(t, 1, eid)
             if length >= LONG_PASS_M:
-                s("opp_long_passes").add(t)
+                s("opp_long_passes").add(t, 1, eid)
             if self._frame_x(e.team_id, e.period, e.location.x) < DEFENSIVE_THIRD_X:
-                s("opp_buildup_passes").add(t)
+                s("opp_buildup_passes").add(t, 1, eid)
                 if e.outcome is PassOutcome.COMPLETE:
-                    s("opp_buildup_completed").add(t)
+                    s("opp_buildup_completed").add(t, 1, eid)
             if e.player_id == keeper_before[e.team_id]:
-                s("opp_keeper_passes").add(t)
+                s("opp_keeper_passes").add(t, 1, eid)
                 if length >= KEEPER_LONG_M:
-                    s("opp_keeper_long").add(t)
+                    s("opp_keeper_long").add(t, 1, eid)
         elif isinstance(e, PeriodEndEvent) and e.period == 1:
             self.period1_end_ms = e.clock_ms
 
@@ -219,8 +266,16 @@ class RollingState:
             high_regains=int(g("high_regains")), opp_buildup_passes=int(g("opp_buildup_passes")),
             opp_buildup_completed=int(g("opp_buildup_completed")), opp_passes=int(g("opp_passes")),
             opp_long_passes=int(g("opp_long_passes")), opp_keeper_passes=int(g("opp_keeper_passes")),
-            opp_keeper_long=int(g("opp_keeper_long")), opp_controlled_min=g("opp_controlled_ms") / 60_000,
+            opp_keeper_long=int(g("opp_keeper_long")),
+            opp_controlled_min=self._controlled[team].total(start_ms, end_ms) / 60_000,
         )
 
     def event_ids(self, team: str, key: str, start_ms: int, end_ms: int) -> list[str]:
+        """Ids of the events counted under ``key`` in [start_ms, end_ms) (see EVIDENCE_KEYS)."""
+        if key == "opp_controlled_intervals":
+            return self._controlled[team].event_ids(max(0, start_ms), end_ms)
         return self._series[(team, key)].event_ids(max(0, start_ms), end_ms)
+
+    def evidence(self, team: str, start_ms: int, end_ms: int) -> dict[str, list[str]]:
+        """Every numerator and denominator event behind ``window(team, start_ms, end_ms)``."""
+        return {k: self.event_ids(team, k, start_ms, end_ms) for k in EVIDENCE_KEYS}

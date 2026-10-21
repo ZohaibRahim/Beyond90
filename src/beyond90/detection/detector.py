@@ -24,8 +24,20 @@ hidden ground truth):
 5. Persistence: rules 2–4 must hold on 3 consecutive ticks -> SUSTAINED_CHANGE.
    If only the primary signal holds -> CANDIDATE. Otherwise NO_CHANGE.
 
+Statistical caveat: the z values are approximate detection heuristics, NOT calibrated
+probabilities. Counts are not independent Poisson/binomial draws (passes and pressures
+cluster within possessions), the baseline is chosen by the clock rather than at random,
+and consecutive ticks share up to 9 of their 10 recent minutes, so successive
+assessments are strongly dependent and "3 consecutive ticks" is far weaker evidence
+than three independent tests. Repeating the test every minute for two teams and two
+directions also inflates the chance of a spurious finding. Error rates must therefore
+be measured empirically (paired control matches; docs/EVALUATION_PROTOCOL.md), not
+read off the thresholds.
+
 A finding is emitted the first time a team reaches SUSTAINED_CHANGE in a
-direction. Findings report observed associations in public events, never causes
+direction. Its ``supporting_event_ids`` are the headline events (high pressures and
+high regains in the recent window); the complete numerator and denominator events
+for every window are available on demand from ``detection.evidence.finding_evidence``. Findings report observed associations in public events, never causes
 of individual passes, turnovers or goals.
 """
 

@@ -262,3 +262,91 @@ def test_detection_is_deterministic_and_serializable():
     result = detect(r.setup, r.events)
     assert result == detect(r.setup, list(r.events)) == run(42, 0)
     assert DetectionResult.model_validate_json(result.model_dump_json()) == result
+
+
+# -- Stage 3B correctness pass: interval overlap, full evidence, availability -------------
+
+def test_interval_series_counts_only_overlap():
+    from beyond90.detection.metrics import _IntervalSeries
+
+    s = _IntervalSeries()
+    s.add(0, 10_000, "a")
+    s.add(10_000, 10_000, "zero")
+    s.add(15_000, 40_000, "b")
+    assert s.total(0, 100_000) == 35_000
+    assert s.total(5_000, 20_000) == 5_000 + 5_000          # both ends clipped
+    assert s.total(20_000, 30_000) == 10_000                # window inside one interval
+    assert s.total(10_000, 15_000) == 0                     # gap between intervals
+    assert s.total(40_000, 50_000) == 0 and s.total(30_000, 30_000) == 0
+    assert s.event_ids(5_000, 20_000) == ["a", "b"]
+    for cut in range(0, 45_000, 2_500):                     # any partition sums to the whole
+        assert s.total(0, cut) + s.total(cut, 100_000) == 35_000
+
+
+@pytest.mark.parametrize("seed", [0, 42])
+def test_controlled_time_matches_brute_force_overlap(seed):
+    from beyond90.analytics.possession import TimeCategory, possession_intervals
+
+    r = pair(seed)[0]
+    state = RollingState(r.setup)
+    for e in r.events:
+        state.ingest(e)
+    p1_end = state.period1_end_ms
+    spans = []
+    for iv in possession_intervals(r.setup, r.events):
+        if iv.category is TimeCategory.CONTROLLED:
+            start = iv.start_event.clock_ms + (0 if iv.start_event.period == 1 else p1_end)
+            spans.append((r.setup.opponent_id(iv.team_id), start, start + iv.duration_ms))
+    for a in range(0, 96 * 60_000, 137_777):  # window edges land inside intervals
+        for length in (5 * 60_000, 10 * 60_000):
+            for team in r.setup.team_ids:
+                expected = sum(max(0, min(e, a + length) - max(s, a)) for t, s, e in spans if t == team)
+                assert round(state.window(team, a, a + length).opp_controlled_min * 60_000) == expected
+
+
+def _all_findings():
+    for seed in (0, 42):
+        for which in (0, 1):
+            r = pair(seed)[which]
+            result = run(seed, which)
+            for f in result.findings:
+                yield r, result, f
+
+
+def test_some_finding_exists_for_evidence_tests():
+    assert any(True for _ in _all_findings())
+
+
+def test_full_evidence_reproduces_finding_counts_and_was_available():
+    from beyond90.detection import finding_evidence
+
+    for r, result, f in _all_findings():
+        ev = finding_evidence(r.setup, r.events, f)
+        by_id = {e.event_id: i for i, e in enumerate(r.events)}
+        releases = release_times(r.events)
+        detected = MatchTime(f.detected_period, f.detected_clock_ms)
+        for name, w in (("baseline", ev.baseline), ("recent", ev.recent)):
+            for key in ("high_pressures", "high_regains", "opp_buildup_passes", "opp_buildup_completed",
+                        "opp_passes", "opp_long_passes", "opp_keeper_passes", "opp_keeper_long"):
+                assert len(w.event_ids[key]) == f.metrics[f"{name}_{key}"] == w.counts[key]
+        assert ev.recent.event_ids["opp_buildup_passes"] == (ev.recent_first_half.event_ids["opp_buildup_passes"]
+                                                             + ev.recent_second_half.event_ids["opp_buildup_passes"])
+        assert set(f.supporting_event_ids) <= set(ev.recent.event_ids["high_pressures"]
+                                                  + ev.recent.event_ids["high_regains"])
+        for w in (ev.baseline, ev.recent):
+            for key, ids in w.event_ids.items():
+                for eid in ids:
+                    i = by_id[eid]
+                    assert i < ev.released_event_count
+                    assert releases[i] is not None and releases[i] <= detected, (key, eid)
+                    if key.startswith("opp_") and key != "opp_controlled_intervals":
+                        assert r.events[i].team_id != f.team_id
+
+
+def test_evidence_is_unaffected_by_later_events():
+    from beyond90.detection import finding_evidence
+
+    for r, result, f in _all_findings():
+        detected = MatchTime(f.detected_period, f.detected_clock_ms)
+        k = len(AsOfFeed(r.events).visible(detected))
+        assert finding_evidence(r.setup, r.events[: k + 1], f) == finding_evidence(r.setup, r.events, f)
