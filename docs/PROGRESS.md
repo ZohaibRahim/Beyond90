@@ -11,7 +11,7 @@ Last updated: 2026-10-20. Keep this file current at the end of every stage.
 | 2.5 Corrections | Conditionally approved | `71f1695` | Goalkeeper back-pass mechanism, time-based possession, possession sequences, public/private report split, live public-only file access, paired-control intervention review |
 | 2.6 Final checks | Stage 3A requested next (no explicit approval recorded) | `cf07bac` | Mutually exclusive time accounting; fix for pass receptions piling up on the goal line and touchlines; pattern-vs-cause rule |
 | 3A Detection | Approved, completed | `c112976` | As-of feed with release-time semantics; rolling 5/10-min pressing metrics; deterministic sustained-change detector with insufficient-evidence outcome; structured findings; reconciled time-table display |
-| 3B.1 Dev benchmark | Awaiting review | this commit | Correctness pass (full evidence, interval overlap, z caveats); pre-registered protocol (`a33e74f`); development benchmark of 5 minimum-data configs; holdout locked and not run |
+| 3B.1 Dev benchmark | Awaiting review | `e7a8588` | Correctness pass (full evidence, interval overlap, z caveats); pre-registered protocol (`a33e74f`); development benchmark of 5 minimum-data configs; holdout locked and not run |
 
 ## Stage 3B part 1: correctness pass and development benchmark
 
